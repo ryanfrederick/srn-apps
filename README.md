@@ -9,3 +9,4 @@ in HTML and JavaScript in order to run on restricted computers with access to a 
 |-------|-------------|
 | Accommodations | Generates and email to send to teachers with common requested accommodations/supports. |
 | Health Information | Collects standard health information and generates a summary. Allows you to edit it before copying and pasting it elsewehre. |
+| Contacts | Contact manager designed to suports nurses with multiple sites. The file generated is also used for an emailer to determine nurses at school to automatically add a nurse to CC for automated communication. |
