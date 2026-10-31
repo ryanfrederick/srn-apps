@@ -563,7 +563,14 @@
             } else {
                 drestrict = ' has no listed dietary restrictions.';
             }
-            
+
+            // Combine diet restrictions and allergies to sound less robotic when neither is populated
+            let adCombined;
+            if (!diet && !allergies) {
+                adCombined = true; //later recognize when when we've combined the two statements into one
+                ax = ' has no listed alleriges or dietary restrictions.';
+            }
+
             // Process immunization status
             let immun = '';
             if (document.getElementById('immun').checked) {
@@ -609,7 +616,9 @@
             
             if (edHospText) paragraph += `${pronoun1cap} ${edHospText}`;
             
-            paragraph += `${pronoun1cap}${ax} ${pronoun1cap}${drestrict} `;
+            paragraph += `${pronoun1cap}${ax} `;
+
+            if (!adCombined) paragraph += `${pronoun1cap}${drestrict} `;
             
             if (screeningText) paragraph += `${pronoun1cap} ${screeningText}`;
             
