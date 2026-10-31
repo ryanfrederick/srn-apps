@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paraprofessional Support Plan Builder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #eef2f7;
+      color: #2d3748;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      text-align: center;
+      padding: 32px 24px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      border-radius: 14px;
+      margin-bottom: 28px;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+    }
+    .page-header h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px; }
+    .page-header p  { margin-top: 6px; opacity: 0.88; font-size: 0.97rem; }
+
+    /* ── Sections ── */
+    .section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border-left: 5px solid #3b82f6;
+    }
+    .section.health   { border-left-color: #10b981; }
+    .section.nursing  { border-left-color: #0891b2; }
+    .section.socemot  { border-left-color: #f59e0b; }
+    .section.safety   { border-left-color: #ef4444; }
+    .section.comm     { border-left-color: #8b5cf6; }
+    .section.output   { border-left-color: #14b8a6; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+    .section.health  .section-title { color: #059669; }
+    .section.nursing .section-title { color: #0e7490; }
+    .section.socemot .section-title { color: #d97706; }
+    .section.safety  .section-title { color: #dc2626; }
+    .section.comm    .section-title { color: #7c3aed; }
+    .section.output  .section-title { color: #0d9488; }
+    .section-title:not([class]) { color: #1d4ed8; }
+
+    .icon-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #eff6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .section.health  .icon-badge { background: #ecfdf5; }
+    .section.nursing .icon-badge { background: #ecfeff; }
+    .section.socemot .icon-badge { background: #fffbeb; }
+    .section.safety  .icon-badge { background: #fef2f2; }
+    .section.comm    .icon-badge { background: #f5f3ff; }
+    .section.output  .icon-badge { background: #f0fdfa; }
+
+    /* ── Form controls ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #64748b;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="tel"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea,
+    #output-textarea {
+      padding: 10px 13px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.93rem;
+      font-family: inherit;
+      color: #1e293b;
+      background: #f8fafc;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 34px;
+      cursor: pointer;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus,
+    #output-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.14);
+      background: #fff;
+    }
+
+    .form-group textarea { resize: vertical; min-height: 82px; }
+
+    /* ── Parent cards ── */
+    .parent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 6px;
+    }
+
+    .parent-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .parent-card h4 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+
+    .parent-card .form-group { margin-bottom: 10px; }
+    .parent-card .form-group:last-child { margin-bottom: 0; }
+
+    /* ── Subsection labels ── */
+    .sub-label {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: #334155;
+      margin: 22px 0 12px;
+    }
+    .sub-label:first-child { margin-top: 0; }
+
+    /* ── Checkboxes ── */
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 9px;
+    }
+
+    .cb-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .cb-item:hover { border-color: #93c5fd; background: #eff6ff; }
+    .cb-item:has(input:checked) { border-color: #3b82f6; background: #dbeafe; }
+    .section.health  .cb-item:has(input:checked) { border-color: #10b981; background: #d1fae5; }
+    .section.nursing .cb-item:has(input:checked) { border-color: #0891b2; background: #cffafe; }
+    .section.socemot .cb-item:has(input:checked) { border-color: #f59e0b; background: #fef3c7; }
+    .section.safety  .cb-item:has(input:checked) { border-color: #ef4444; background: #fee2e2; }
+    .section.comm    .cb-item:has(input:checked) { border-color: #8b5cf6; background: #ede9fe; }
+
+    .cb-item input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .section.health  .cb-item input { accent-color: #10b981; }
+    .section.nursing .cb-item input { accent-color: #0891b2; }
+    .section.socemot .cb-item input { accent-color: #f59e0b; }
+    .section.safety  .cb-item input { accent-color: #ef4444; }
+    .section.comm    .cb-item input { accent-color: #8b5cf6; }
+
+    .cb-item span { font-size: 0.88rem; color: #475569; line-height: 1.4; }
+    .cb-item:has(input:checked) span { color: #1e293b; font-weight: 600; }
+
+    hr.divider { border: none; border-top: 2px solid #f1f5f9; margin: 24px 0; }
+
+    /* ── Generate button ── */
+    .btn-generate {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 22px;
+      letter-spacing: 0.4px;
+      box-shadow: 0 5px 15px rgba(59,130,246,0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(59,130,246,0.45); }
+    .btn-generate:active { transform: translateY(0); }
+
+    /* ── Output section ── */
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      background: #14b8a6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.15s;
+    }
+    .btn-copy:hover { background: #0d9488; transform: translateY(-1px); }
+    .btn-copy.copied { background: #059669; }
+
+    #output-textarea {
+      width: 100%;
+      min-height: 480px;
+      padding: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.87rem;
+      line-height: 1.75;
+      resize: vertical;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .parent-grid { grid-template-columns: 1fr; }
+      .page-header h1 { font-size: 1.45rem; }
+      .checkbox-grid { grid-template-columns: 1fr; }
+      .output-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE HEADER
+══════════════════════════════════════════════════ -->
+<div class="page-header">
+  <h1>Paraprofessional Support Plan Builder</h1>
+  <p>Complete each section, then click <strong>Generate Plan</strong> to produce a formatted markdown document.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     DEMOGRAPHICS
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon-badge">👤</div>
+    Student Demographics
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="student-name">Student Name</label>
+      <input type="text" id="student-name" placeholder="Full legal name">
+    </div>
+    <div class="form-group">
+      <label for="grade">Grade</label>
+      <input type="text" id="grade" placeholder="e.g. 3rd, 10th, Pre-K">
+    </div>
+    <div class="form-group">
+      <label for="dob">Date of Birth</label>
+      <input type="text" id="dob" placeholder="MM/DD/YYYY">
+    </div>
+    <div class="form-group">
+      <label for="school-year">School Year</label>
+      <input type="text" id="school-year" placeholder="e.g. 2025–2026">
+    </div>
+  </div>
+
+  <div class="parent-grid">
+    <div class="parent-card">
+      <h4>Contact Person 1</h4>
+      <div class="form-group">
+        <label for="parent1-rel">Relationship</label>
+        <select id="parent1-rel">
+          <option value="Mother">Mother</option>
+          <option value="Father">Father</option>
+          <option value="Guardian">Guardian</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="parent1-name">Name</label>
+        <input type="text" id="parent1-name" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label for="parent1-phone">Phone Number</label>
+        <input type="tel" id="parent1-phone" placeholder="(555) 000-0000">
+      </div>
+    </div>
+    <div class="parent-card">
+      <h4>Contact Person 2</h4>
+      <div class="form-group">
+        <label for="parent2-rel">Relationship</label>
+        <select id="parent2-rel">
+          <option value="Father">Father</option>
+          <option value="Mother">Mother</option>
+          <option value="Guardian">Guardian</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="parent2-name">Name</label>
+        <input type="text" id="parent2-name" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label for="parent2-phone">Phone Number</label>
+        <input type="tel" id="parent2-phone" placeholder="(555) 000-0000">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     HEALTH
+══════════════════════════════════════════════════ -->
+<div class="section health">
+  <div class="section-title">
+    <div class="icon-badge">🏥</div>
+    Health
+  </div>
+
+  <div class="form-group" style="margin-bottom:16px">
+    <label for="diagnoses">Medical Diagnoses</label>
+    <textarea id="diagnoses" placeholder="List all relevant medical, developmental, or psychological diagnoses (e.g., Autism Spectrum Disorder Level 2, ADHD, Down Syndrome, Cerebral Palsy, Epilepsy...)"></textarea>
+  </div>
+
+  <div class="form-group" style="margin-bottom:16px">
+    <label for="allergies">Allergies</label>
+    <textarea id="allergies" placeholder="List all known allergies and severity — food, environmental, medication, latex, etc. (e.g., Severe peanut allergy — carries EpiPen, Bee sting allergy...)"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="medications">Current Medications</label>
+    <textarea id="medications" placeholder="List medications, dosages, and administration times (e.g., Sertraline 50mg — morning, Concerta 18mg — 8:00 AM with breakfast...)"></textarea>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     NURSING TRAINING / DELEGATION
+══════════════════════════════════════════════════ -->
+<div class="section nursing">
+  <div class="section-title">
+    <div class="icon-badge">🩺</div>
+    Nursing Training / Delegation
+  </div>
+
+  <div class="sub-label">Procedures Requiring Nurse Training or Delegation</div>
+  <div class="checkbox-grid" id="nursing-grid"></div>
+
+  <hr class="divider">
+
+  <div class="form-group">
+    <label for="nursing-notes">Additional Nursing Notes</label>
+    <textarea id="nursing-notes" style="min-height:80px"
+      placeholder="Specify any additional nursing procedures, delegation details, or special instructions not listed above..."></textarea>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SOCIAL / EMOTIONAL
+══════════════════════════════════════════════════ -->
+<div class="section socemot">
+  <div class="section-title">
+    <div class="icon-badge">💛</div>
+    Social / Emotional
+  </div>
+
+  <div class="sub-label">Documented Behaviors</div>
+  <div class="checkbox-grid" id="behaviors-grid"></div>
+
+  <hr class="divider">
+
+  <div class="form-group">
+    <label for="triggers">Known Triggers</label>
+    <textarea id="triggers" style="min-height:100px"
+      placeholder="Describe situations, sensory inputs, or events known to escalate behaviors (e.g., loud or sudden noises, unexpected schedule changes, physical contact, transitioning between activities, certain textures or foods, peer conflict...)"></textarea>
+  </div>
+
+  <hr class="divider">
+
+  <div class="sub-label">Behavioral Interventions</div>
+  <div class="checkbox-grid" id="interventions-grid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SAFETY
+══════════════════════════════════════════════════ -->
+<div class="section safety">
+  <div class="section-title">
+    <div class="icon-badge">🛡️</div>
+    Safety
+  </div>
+
+  <div class="sub-label">Recommended Safety Supports</div>
+  <div class="checkbox-grid" id="safety-grid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     COMMUNICATION
+══════════════════════════════════════════════════ -->
+<div class="section comm">
+  <div class="section-title">
+    <div class="icon-badge">💬</div>
+    Communication
+  </div>
+
+  <div class="sub-label">Communication Interventions &amp; Considerations</div>
+  <div class="checkbox-grid" id="communication-grid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     GENERATE BUTTON
+══════════════════════════════════════════════════ -->
+<button class="btn-generate" onclick="generatePlan()">
+  ⚡ Generate Paraprofessional Support Plan
+</button>
+
+<!-- ══════════════════════════════════════════════════
+     OUTPUT
+══════════════════════════════════════════════════ -->
+<div class="section output">
+  <div class="output-header">
+    <div class="section-title" style="margin-bottom:0;border:none;padding:0">
+      <div class="icon-badge">📄</div>
+      Generated Support Plan
+    </div>
+    <button class="btn-copy" id="copy-btn" onclick="copyToClipboard()">
+      📋 Copy to Clipboard
+    </button>
+  </div>
+  <textarea id="output-textarea" readonly
+    placeholder="Complete the form above and click 'Generate Paraprofessional Support Plan' to populate this document..."></textarea>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════ -->
+<script>
+  // ── Checkbox data ────────────────────────────────
+
+  const NURSING_DELEGATION = [
+    "Gastrostomy tube (G-tube) feeding and care",
+    "Nasogastric (NG) tube feeding",
+    "Tracheostomy care and maintenance",
+    "Oral / nasal / tracheostomy suctioning",
+    "Oxygen administration and monitoring",
+    "Nebulizer / aerosol medication treatment",
+    "Blood glucose monitoring",
+    "Insulin administration (subcutaneous injection)",
+    "EpiPen / epinephrine auto-injector administration",
+    "Seizure rescue medication (Diastat / intranasal midazolam)",
+    "Urinary catheterization (intermittent clean)",
+    "Colostomy / ostomy care",
+    "Wound care and sterile dressing changes",
+    "Oral medication administration (school-day doses)",
+    "Injectable medication administration (non-insulin)",
+    "Pulse oximetry monitoring",
+    "Feeding tube medication administration",
+    "Postural drainage / airway clearance techniques",
+    "Vital signs monitoring (blood pressure, heart rate, temperature)",
+    "Medical positioning and transfer (equipment-dependent)",
+    "Hearing aid or cochlear implant management",
+    "Orthotic / splint / brace application and monitoring",
+    "Toileting assistance and hygiene care",
+    "Bowel / ostomy care and management",
+    "Diapering and incontinence care",
+    "Feeding assistance / tube feeding",
+  ];
+
+  const BEHAVIORS = [
+    "Self-injurious behavior (hitting self, head banging, biting self)",
+    "Physical aggression toward others (hitting, kicking, scratching, biting)",
+    "Throwing objects / property destruction",
+    "Verbal outbursts (screaming, yelling, cursing)",
+    "Repetitive talk / perseveration on topics",
+    "Elopement / running away from classroom or campus",
+    "Non-compliance / task refusal",
+    "Spitting",
+    "Inappropriate touching (self or others)",
+    "Stripping / removing clothing",
+    "Anxiety or panic behaviors",
+    "Withdrawal / emotional shutdown",
+    "Prolonged crying spells",
+    "Obsessive or compulsive behaviors",
+    "Severe mood swings / emotional dysregulation",
+    "Pica (ingesting non-food items)",
+    "Rocking, stimming, or repetitive motor behaviors",
+    "Leaving assigned area without permission",
+    "Verbal threats toward others",
+    "Meltdowns (prolonged, intense dysregulation)",
+  ];
+
+  const INTERVENTIONS = [
+    "Verbal redirection",
+    "Non-verbal / gestural prompting",
+    "Visual schedule and daily supports",
+    "Sensory break (quiet space, fidgets, weighted items)",
+    "Movement or motor break",
+    "Cool-down / calm-down time in designated space",
+    "Positive reinforcement and reward system",
+    "Token economy / point system",
+    "First-then board",
+    "Offering structured choices",
+    "1:1 proximity / close physical support",
+    "De-escalation techniques (calm tone, low demands)",
+    "Social stories or video modeling",
+    "Check-in / check-out system",
+    "Planned ignoring of low-level attention-seeking behavior",
+    "Structured routine and predictability",
+    "Crisis prevention / behavior intervention plan",
+    "Behavior contract",
+    "Specific verbal praise and feedback",
+    "Transition warnings (e.g., '5 more minutes')",
+  ];
+
+  const SAFETY = [
+    "1:1 paraprofessional supervision at all times",
+    "Line-of-sight supervision (visual contact maintained)",
+    "Supervision during all transitions between settings",
+    "Secured exits / door alarms for elopement prevention",
+    "Elopement prevention protocol on file",
+    "Seizure precautions and action plan on file",
+    "Allergy-safe environment (strict avoidance protocol)",
+    "EpiPen / emergency medication immediately accessible",
+    "Protective helmet or safety gear",
+    "Non-slip footwear required",
+    "Padded or modified environment (remove hard edges)",
+    "Access to designated calm/safe sensory space",
+    "Supervised meal times / cafeteria monitoring",
+    "Restroom supervision (age-appropriate, privacy maintained)",
+    "Playground and outdoor area supervision",
+    "Physical intervention trained staff required (CPI/NCI certified)",
+    "Medication administration plan on file",
+    "Emergency communication protocol on file",
+    "No unsupervised peer interaction",
+    "Bus aide / safe transportation protocol required",
+  ];
+
+  const COMMUNICATION = [
+    "AAC device (speech-generating device) — primary communication mode",
+    "PECS (Picture Exchange Communication System)",
+    "Communication board or picture card system",
+    "Sign language / manual signs (specify system)",
+    "Use simple language and short sentences",
+    "Allow extended wait time for processing (10+ seconds)",
+    "Repeat or rephrase instructions without frustration",
+    "Avoid idioms, sarcasm, and figurative language",
+    "Supplement verbal directions with written instructions",
+    "Use verbal prompting hierarchy (independent → model)",
+    "Pair verbal directions with visual supports",
+    "Offer structured choices — avoid open-ended questions",
+    "State student's name before giving a direction",
+    "Use positive, affirming language at all times",
+    "Narrate actions and environment to build language",
+    "Use social scripts or role-play for peer interactions",
+    "Reduce auditory and visual distractions during communication",
+    "Model correct language without forced repetition",
+    "Pre-teach vocabulary before new units or activities",
+    "Maintain consistent communication partners and routines",
+  ];
+
+  // ── Build checkbox grids ─────────────────────────
+
+  function buildGrid(containerId, items) {
+    const container = document.getElementById(containerId);
+    items.forEach((item, i) => {
+      const id = `${containerId}_${i}`;
+      const lbl = document.createElement('label');
+      lbl.className = 'cb-item';
+      lbl.htmlFor = id;
+      lbl.innerHTML = `<input type="checkbox" id="${id}" value="${escAttr(item)}"><span>${escHTML(item)}</span>`;
+      container.appendChild(lbl);
+    });
+  }
+
+  function escAttr(s) { return s.replace(/"/g, '&quot;'); }
+  function escHTML(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  buildGrid('nursing-grid',       NURSING_DELEGATION);
+  buildGrid('behaviors-grid',     BEHAVIORS);
+  buildGrid('interventions-grid', INTERVENTIONS);
+  buildGrid('safety-grid',        SAFETY);
+  buildGrid('communication-grid', COMMUNICATION);
+
+  // ── Auto-populate school year ────────────────────
+
+  (function() {
+    const now = new Date();
+    const m = now.getMonth(); // 0 = Jan … 6 = Jul
+    const y = now.getFullYear();
+    const start = m >= 6 ? y : y - 1;
+    document.getElementById('school-year').value = `${start}–${start + 1}`;
+  })();
+
+  // ── Helpers ─────────────────────────────────────
+
+  function val(id) {
+    return (document.getElementById(id).value || '').trim();
+  }
+
+  function getChecked(containerId) {
+    return Array.from(
+      document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)
+    ).map(cb => cb.value);
+  }
+
+  function mdList(items) {
+    if (!items || items.length === 0) return '_None selected_';
+    return items.map(i => `- ${i}`).join('\n');
+  }
+
+  function mdText(text) {
+    return text || '_None provided_';
+  }
+
+  // ── Generate plan ────────────────────────────────
+
+  function generatePlan() {
+    const studentName  = val('student-name') || '[Student Name]';
+    const grade        = val('grade')        || '[Grade]';
+    const dobRaw = val('dob');
+    let dobDisplay = '[Date of Birth]';
+    if (dobRaw) {
+      const parts = dobRaw.split('/');
+      if (parts.length === 3) {
+        const dobDate = new Date(parts[2], parts[0] - 1, parts[1]);
+        const now = new Date();
+        let years = now.getFullYear() - dobDate.getFullYear();
+        const m = now.getMonth() - dobDate.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < dobDate.getDate())) years--;
+        dobDisplay = `${dobRaw} (age ${years})`;
+      } else {
+        dobDisplay = dobRaw;
+      }
+    }
+    const schoolYear   = val('school-year')  || '[School Year]';
+
+    const parent1Rel   = val('parent1-rel')   || 'Mother';
+    const parent1Name  = val('parent1-name')  || '—';
+    const parent1Phone = val('parent1-phone') || '—';
+    const parent2Rel   = val('parent2-rel')   || 'Father';
+    const parent2Name  = val('parent2-name')  || '—';
+    const parent2Phone = val('parent2-phone') || '—';
+
+    const diagnoses    = mdText(val('diagnoses'));
+    const allergies    = mdText(val('allergies'));
+    const medications  = mdText(val('medications'));
+    const triggers     = mdText(val('triggers'));
+    const nursingNotes = mdText(val('nursing-notes'));
+
+    const nursingList      = getChecked('nursing-grid');
+    const behaviorList     = getChecked('behaviors-grid');
+    const interventionList = getChecked('interventions-grid');
+    const safetyList       = getChecked('safety-grid');
+    const commList         = getChecked('communication-grid');
+
+    const today = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const plan =
+`# Paraprofessional Support Plan
+
+| | |
+|---|---|
+| **Student Name** | ${studentName} |
+| **Grade** | ${grade} |
+| **Date of Birth** | ${dobDisplay} |
+| **School Year** | ${schoolYear} |
+
+---
+
+## Parent / Guardian Contact
+
+| Relationship | Name | Phone |
+|---|---|---|
+| ${parent1Rel} | ${parent1Name} | ${parent1Phone} |
+| ${parent2Rel} | ${parent2Name} | ${parent2Phone} |
+
+---
+
+## Health Information
+
+### Medical Diagnoses
+
+${diagnoses}
+
+### Allergies
+
+${allergies}
+
+### Current Medications
+
+${medications}
+
+---
+
+## Nursing Training / Delegation
+
+### Delegated Procedures
+
+${mdList(nursingList)}
+
+### Additional Nursing Notes
+
+${nursingNotes}
+
+---
+
+## Social / Emotional
+
+### Documented Behaviors
+
+${mdList(behaviorList)}
+
+### Known Triggers
+
+${triggers}
+
+### Behavioral Interventions
+
+${mdList(interventionList)}
+
+---
+
+## Safety
+
+### Recommended Safety Supports
+
+${mdList(safetyList)}
+
+---
+
+## Communication
+
+### Communication Interventions & Considerations
+
+${mdList(commList)}
+
+---
+
+*This Paraprofessional Support Plan is a working document intended to guide daily instructional support. It should be reviewed and updated regularly in collaboration with the IEP team, classroom teachers, and related service providers. This plan does not replace the student's IEP or Behavior Intervention Plan (BIP).*
+`;
+
+    const ta = document.getElementById('output-textarea');
+    ta.value = plan;
+    ta.removeAttribute('readonly'); // allow editing after generation
+    ta.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Copy to clipboard ────────────────────────────
+
+  function copyToClipboard() {
+    const ta  = document.getElementById('output-textarea');
+    const btn = document.getElementById('copy-btn');
+
+    if (!ta.value.trim()) {
+      alert('Please generate the plan first by clicking "Generate Paraprofessional Support Plan".');
+      return;
+    }
+
+    const succeed = () => {
+      btn.innerHTML = '✅ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerHTML = '📋 Copy to Clipboard';
+        btn.classList.remove('copied');
+      }, 2600);
+    };
+
+    // Modern clipboard API (requires secure context; works on localhost & https)
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(ta.value).then(succeed).catch(() => fallback(ta, succeed));
+    } else {
+      fallback(ta, succeed);
+    }
+  }
+
+  function fallback(ta, onSuccess) {
+    ta.select();
+    ta.setSelectionRange(0, 99999);
+    try {
+      document.execCommand('copy');
+      onSuccess();
+    } catch (e) {
+      alert('Copy failed. Please select the text manually and press Ctrl+C / Cmd+C.');
+    }
+  }
+</script>
+</body>
+</html>

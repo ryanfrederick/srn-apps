@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Accommodation Email Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: Arial, sans-serif;
+        }
+        .checkbox-group {
+            margin-top: 10px;
+        }
+        .checkbox-table {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .checkbox-table td {
+            width: 50%;
+            padding: 5px;
+            vertical-align: top;
+        }
+        .checkbox-item {
+            margin: 8px 0;
+        }
+        .checkbox-item input {
+            margin-right: 8px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .button-clear {
+            background-color: #dc3545;
+            margin-left: 10px;
+        }
+        .button-clear:hover {
+            background-color: #c82333;
+        }
+        #rn-setup {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        #rn-setup p {
+            margin-top: 0;
+            color: #856404;
+        }
+        #rn-setup .form-group {
+            margin-bottom: 10px;
+        }
+        #rn-setup button {
+            background-color: #ffc107;
+            color: #856404;
+            font-weight: bold;
+        }
+        #rn-setup button:hover {
+            background-color: #e0a800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="rn-setup" style="display:none;">
+            <p><strong>Setup Required:</strong> Your name and email are not yet configured for this form. Please enter them below so they can be included in the generated email signature.</p>
+            <div class="form-group">
+                <label for="rn-input">Your Name (e.g. Jane Smith, RN):</label>
+                <input type="text" id="rn-input" placeholder="Jane Smith, RN">
+            </div>
+            <div class="form-group">
+                <label for="rnemail-input">Your Email:</label>
+                <input type="text" id="rnemail-input" placeholder="jane.smith@asd20.org">
+            </div>
+            <div>
+                <p>*After saving, bookmark this site by pressing Ctrl+D or "Add a bookmark" through your browser's menu.</p>
+            </div>
+            <button type="button" id="rn-setup-btn">Save &amp; Continue</button>
+        </div>
+        <h1>Accommodation Email Generator</h1>
+        
+        <label for="studentName">Student Name (Lastname, Firstname):</label>
+        <input type="text" id="studentName" placeholder="Doe, John">
+        
+        <label for="noteType">Medical Note Type:</label>
+        <select id="noteType">
+            <option value="Concussion">Concussion</option>
+            <option value="Provider Note">Provider Note</option>
+            <option value="No Provider Note">No Provider Note</option>
+        </select>
+        
+        <label>Accommodations:</label>
+        <table class="checkbox-table">
+            <tr>
+                <td>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="elevator" value="Elevator">
+                        <label for="elevator" style="display: inline; font-weight: normal;">Elevator</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="earlyRelease" value="Early Release">
+                        <label for="earlyRelease" style="display: inline; font-weight: normal;">Early Release</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="backpackBuddy" value="Backpack Buddy">
+                        <label for="backpackBuddy" style="display: inline; font-weight: normal;">Backpack Buddy</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sunglasses" value="Sunglasses / Hats">
+                        <label for="sunglasses" style="display: inline; font-weight: normal;">Sunglasses / Hats</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="earbuds" value="Earbuds / Ear Plugs">
+                        <label for="earbuds" style="display: inline; font-weight: normal;">Earbuds / Ear Plugs</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cognitiveBreaks" value="Cognitive Breaks">
+                        <label for="cognitiveBreaks" style="display: inline; font-weight: normal;">Cognitive Breaks</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="healthRoom" value="Health Room Rest">
+                        <label for="healthRoom" style="display: inline; font-weight: normal;">Health Room Rest</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="notesOutlines" value="Notes / Outlines">
+                        <label for="notesOutlines" style="display: inline; font-weight: normal;">Notes / Outlines</label>
+                    </div>
+                </td>
+                <td>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="paperAssignments" value="Paper Assignments">
+                        <label for="paperAssignments" style="display: inline; font-weight: normal;">Paper Assignments</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="reducedWork" value="Reduced Work">
+                        <label for="reducedWork" style="display: inline; font-weight: normal;">Reduced Work</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="highRiskActivity" value="High Risk Activity">
+                        <label for="highRiskActivity" style="display: inline; font-weight: normal;">No High Risk Activity</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="reducedTech" value="Reduced Tech">
+                        <label for="reducedTech" style="display: inline; font-weight: normal;">Reduced Tech</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="reduceReading" value="Reduce reading">
+                        <label for="reduceReading" style="display: inline; font-weight: normal;">Reduce reading</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="allowAudiobooks" value="Allow audiobooks">
+                        <label for="allowAudiobooks" style="display: inline; font-weight: normal;">Allow audiobooks</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="extraTimeTesting" value="Extra-time Testing">
+                        <label for="extraTimeTesting" style="display: inline; font-weight: normal;">Extra-time Testing</label>
+                    </div>
+		    <div class="checkbox-item">
+                        <input type="checkbox" id="extraTimeAssignments" value="Extra-time Assignments">
+                        <label for="extraTimeAssignments" style="display: inline; font-weight: normal;">Extra-time on Assignments</label>
+                    </div>
+
+                </td>
+            </tr>
+        </table>
+        
+        <label for="customAccommodations">Custom Accommodations (one per line):</label>
+        <textarea id="customAccommodations" placeholder="Enter custom accommodations, one per line..."></textarea>
+        
+        <button onclick="generateEmail()">Generate Email</button>
+        <button class="button-clear" onclick="clearForm()">Clear</button>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const rnName = urlParams.get('rn');
+        const rnEmail = urlParams.get('rnemail');
+
+        // Show setup form if rn is not set
+        if (!rnName) {
+            document.getElementById('rn-setup').style.display = 'block';
+        }
+
+        // Handle setup button: reload page with rn and rnemail as URL params
+        document.getElementById('rn-setup-btn').addEventListener('click', function() {
+            const rnValue = document.getElementById('rn-input').value.trim();
+            const rnEmailValue = document.getElementById('rnemail-input').value.trim();
+            if (!rnValue) {
+                alert('Please enter your name.');
+                return;
+            }
+            const params = new URLSearchParams();
+            params.set('rn', rnValue);
+            if (rnEmailValue) params.set('rnemail', rnEmailValue);
+            window.location.search = params.toString();
+        });
+        
+        function generateEmail() {
+            // Get student name and parse it
+            const nameInput = document.getElementById('studentName').value.trim();
+            if (!nameInput || !nameInput.includes(',')) {
+                alert('Please enter a name in the format "Lastname, Firstname"');
+                return;
+            }
+            
+            const nameParts = nameInput.split(',');
+            const lastName = nameParts[0].trim();
+            const firstName = nameParts[1].trim();
+            
+            // Get initials
+            const firstInitial = firstName.charAt(0).toUpperCase();
+            const lastInitial = lastName.charAt(0).toUpperCase();
+            
+            // Get note type
+            const noteType = document.getElementById('noteType').value;
+            let noteText = '';
+            if (noteType === 'Concussion') {
+                noteText = 'with a concussion';
+		additionalText = 'Please, consult the attached concussion wheel for additional guidance.';
+            } else if (noteType === 'Provider Note') {
+                noteText = 'with a provider note';
+		additionalText = '';
+            } else {
+                noteText = 'without a provider note';
+		additionalText = '';
+            }
+            
+            // Get selected accommodations
+            const accommodations = [];
+            if (document.getElementById('elevator').checked) {
+                accommodations.push('Access to elevator');
+            }
+            if (document.getElementById('earlyRelease').checked) {
+                accommodations.push('Allow student to leave 5 minutes early');
+            }
+            if (document.getElementById('backpackBuddy').checked) {
+                accommodations.push('Please, allow fellow student to leave 5 minutes early with student to carry belongings');
+            }
+            if (document.getElementById('sunglasses').checked) {
+                accommodations.push('Allow sunglasses and / or hats in the classroom to limit light stimulus');
+            }
+            if (document.getElementById('earbuds').checked) {
+                accommodations.push('Allow earbuds / earplugs in the classroom to reduce sound stimulus');
+            }
+            if (document.getElementById('cognitiveBreaks').checked) {
+                accommodations.push('Allow student to take cognitive breaks');
+            }
+            if (document.getElementById('healthRoom').checked) {
+                accommodations.push('Allow student to come to health room for longer breaks as needed');
+            }
+            if (document.getElementById('paperAssignments').checked) {
+                accommodations.push('Provide paper assignments as needed');
+            }
+            if (document.getElementById('reducedWork').checked) {
+                accommodations.push('Consider reducing work to demonstrate mastery');
+            }
+            if (document.getElementById('highRiskActivity').checked) {
+                accommodations.push('No high-risk physical activity (i.e. Football, Cheer, PE, etc.)');
+            }
+            if (document.getElementById('notesOutlines').checked) {
+                accommodations.push('Provide copies of notes/outlines');
+            }
+            if (document.getElementById('reducedTech').checked) {
+                accommodations.push('Minimize exposure to technology');
+            }
+            if (document.getElementById('reduceReading').checked) {
+                accommodations.push('Minimize the amount of time for reading');
+            }
+            if (document.getElementById('allowAudiobooks').checked) {
+                accommodations.push('Allow the use of and provide audiobooks when possible');
+            }
+            if (document.getElementById('extraTimeTesting').checked) {
+                accommodations.push('Provide extra time for testing and consider rescheduling testing for times when symptoms are improved');
+            }
+	    if (document.getElementById('extraTimeAssignments').checked) {
+                accommodations.push('Provide extra time on assignments');
+            }
+
+            
+            // Add custom accommodations from textarea
+            const customAccommodations = document.getElementById('customAccommodations').value.trim();
+            if (customAccommodations) {
+                const customLines = customAccommodations.split('\n');
+                customLines.forEach(line => {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine) {
+                        accommodations.push(trimmedLine);
+                    }
+                });
+            }
+            
+            // Build email body
+            const subject = `${firstInitial}${lastInitial} Medical Information`;
+            let body = `${firstName}'s Academic Team:\n\n`;
+            body += `${firstName} ${lastName} has returned to school ${noteText} and needs some temporary supports to better access their education. ${additionalText}\n\n`;
+            
+            if (accommodations.length > 0) {
+                accommodations.forEach(acc => {
+                    body += `* ${acc}\n`;
+                });
+                body += '\n';
+            }
+            
+            body += `Best regards,\n${rnName}`;
+            
+            // Create mailto link
+            let mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Add BCC if rnemail parameter is provided
+            if (rnEmail) {
+                mailtoLink += `&bcc=${encodeURIComponent(rnEmail)}`;
+            }
+            
+            // Open email client
+            window.location.href = mailtoLink;
+        }
+        
+        function clearForm() {
+            // Clear text inputs
+            document.getElementById('studentName').value = '';
+            
+            // Reset select to first option
+            document.getElementById('noteType').selectedIndex = 0;
+            
+            // Uncheck all checkboxes
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Clear custom accommodations textarea
+            document.getElementById('customAccommodations').value = '';
+        }
+    </script>
+</body>
+</html>

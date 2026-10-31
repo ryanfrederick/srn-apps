@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacts</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #222;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  #header {
+    background: #1a252f;
+    color: #fff;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    z-index: 10;
+  }
+  #header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    flex: 1;
+  }
+  .hdr-btn {
+    background: #2980b9;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .hdr-btn:hover { background: #2471a3; }
+  .hdr-btn.green { background: #27ae60; }
+  .hdr-btn.green:hover { background: #1e8449; }
+  .hdr-btn.amber { background: #d68910; }
+  .hdr-btn.amber:hover { background: #b7770d; }
+
+  /* ── Main layout ── */
+  #main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 280px;
+    min-width: 220px;
+    background: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  #search-wrap {
+    padding: 12px;
+    background: #243342;
+  }
+  #search {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #1a252f;
+    color: #ecf0f1;
+    font-size: .9rem;
+    outline: none;
+  }
+  #search::placeholder { color: #7f8c8d; }
+  #search:focus { box-shadow: 0 0 0 2px #2980b9; }
+
+  #contact-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+  #contact-list::-webkit-scrollbar { width: 5px; }
+  #contact-list::-webkit-scrollbar-thumb { background: #34495e; border-radius: 3px; }
+
+  .contact-item {
+    padding: 11px 16px;
+    cursor: pointer;
+    color: #bdc3c7;
+    font-size: .9rem;
+    transition: background .12s, color .12s;
+    border-left: 3px solid transparent;
+  }
+  .contact-item:hover { background: #34495e; color: #ecf0f1; }
+  .contact-item.active {
+    background: #1a252f;
+    color: #fff;
+    border-left-color: #2980b9;
+    font-weight: 600;
+  }
+
+  .empty-msg {
+    color: #7f8c8d;
+    font-size: .85rem;
+    text-align: center;
+    padding: 24px 16px;
+  }
+
+  /* ── Right panel ── */
+  #panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px;
+    background: #f0f2f5;
+  }
+  #panel::-webkit-scrollbar { width: 6px; }
+  #panel::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+  .panel-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #95a5a6;
+    gap: 12px;
+  }
+  .panel-empty svg { opacity: .25; }
+  .panel-empty p { font-size: 1rem; }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.10);
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+    color: #1a252f;
+  }
+  .card h3 {
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 6px;
+  }
+
+  /* ── Detail view ── */
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .detail-name {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #1a252f;
+  }
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .btn {
+    padding: 7px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: .84rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-edit   { background: #2980b9; color: #fff; }
+  .btn-edit:hover { background: #2471a3; }
+  .btn-delete { background: #e74c3c; color: #fff; }
+  .btn-delete:hover { background: #c0392b; }
+  .btn-vcard  { background: #8e44ad; color: #fff; }
+  .btn-vcard:hover { background: #7d3c98; }
+  .btn-save   { background: #27ae60; color: #fff; }
+  .btn-save:hover { background: #1e8449; }
+  .btn-cancel { background: #95a5a6; color: #fff; }
+  .btn-cancel:hover { background: #7f8c8d; }
+
+  .field-row {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .field-label {
+    color: #7f8c8d;
+    font-size: .8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    min-width: 68px;
+  }
+  .field-value { color: #2c3e50; font-size: .95rem; }
+  .field-value a { color: #2980b9; text-decoration: none; }
+  .field-value a:hover { text-decoration: underline; }
+  .phone-link {
+    color: #2980b9;
+    cursor: pointer;
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-size: .95rem;
+    padding: 0;
+    font-family: inherit;
+  }
+  .phone-link:hover { text-decoration: underline; }
+
+  .notes-block {
+    margin-top: 4px;
+    color: #2c3e50;
+    font-size: .93rem;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  /* ── Site cards ── */
+  .site-card {
+    background: #f8f9fb;
+    border: 1px solid #e2e5ea;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+  }
+  .site-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .site-title-text {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1a252f;
+  }
+  .site-abbr-badge {
+    background: #2980b9;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+
+  /* ── Form ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  .form-group input,
+  .form-group textarea {
+    padding: 8px 11px;
+    border: 1px solid #d5d8dc;
+    border-radius: 6px;
+    font-size: .93rem;
+    font-family: inherit;
+    color: #2c3e50;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: #2980b9;
+    box-shadow: 0 0 0 3px rgba(41,128,185,.15);
+  }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  /* ── Collapsible site section ── */
+  .site-section { margin-bottom: 10px; }
+  .site-toggle {
+    width: 100%;
+    text-align: left;
+    background: #eaf1f8;
+    border: 1px solid #d0dce8;
+    border-radius: 6px;
+    padding: 9px 14px;
+    font-size: .9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background .12s;
+  }
+  .site-toggle:hover { background: #d6e8f5; }
+  .site-toggle .arrow { font-size: .75rem; transition: transform .2s; }
+  .site-toggle.open .arrow { transform: rotate(90deg); }
+  .site-body {
+    display: none;
+    padding: 14px 0 4px;
+  }
+  .site-body.open { display: block; }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  /* ── QR Modal ── */
+  #qr-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  #qr-modal.show { display: flex; }
+  #qr-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px 32px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    max-width: 360px;
+    width: 90%;
+  }
+  #qr-box h3 { font-size: 1rem; color: #1a252f; }
+  #qr-canvas { border: 1px solid #e0e0e0; border-radius: 4px; }
+  #qr-label { font-size: .85rem; color: #7f8c8d; text-align: center; word-break: break-all; }
+  #qr-close {
+    background: #2980b9; color: #fff; border: none;
+    border-radius: 6px; padding: 8px 24px;
+    font-size: .9rem; cursor: pointer; font-weight: 500;
+    transition: background .15s;
+  }
+  #qr-close:hover { background: #2471a3; }
+
+  /* ── Confirm dialog ── */
+  #confirm-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+  }
+  #confirm-modal.show { display: flex; }
+  #confirm-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 28px 32px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.2);
+    max-width: 360px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  #confirm-box p { font-size: .97rem; color: #2c3e50; line-height: 1.5; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ── Load merge dialog ── */
+  #merge-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+  }
+  #merge-modal.show { display: flex; }
+  #merge-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 28px 32px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.2);
+    max-width: 400px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  #merge-box h3 { font-size: 1.05rem; color: #1a252f; }
+  #merge-box p { font-size: .93rem; color: #555; line-height: 1.5; }
+  .merge-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+  /* ── Scrollbar polish ── */
+  #panel::-webkit-scrollbar { width: 6px; }
+  #panel::-webkit-scrollbar-track { background: transparent; }
+
+  /* ── Clipboard button ── */
+  .btn-clipboard {
+    background: none;
+    border: 1px solid #d5d8dc;
+    border-radius: 4px;
+    padding: 1px 6px;
+    cursor: pointer;
+    color: #7f8c8d;
+    font-size: .75rem;
+    line-height: 1.4;
+    transition: background .12s, color .12s, border-color .12s;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .btn-clipboard:hover { background: #eaf1f8; color: #2980b9; border-color: #2980b9; }
+  .btn-clipboard.copied { background: #eafaf1; color: #27ae60; border-color: #27ae60; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>&#128100; Contacts</h1>
+  <button class="hdr-btn green" id="btn-new">+ New Contact</button>
+  <button class="hdr-btn amber" id="btn-save-json">&#8659; Save JS</button>
+  <button class="hdr-btn" id="btn-load-json">&#8657; Load JS</button>
+  <input type="file" id="file-input" accept=".js" style="display:none">
+</div>
+
+<div id="main">
+  <div id="sidebar">
+    <div id="search-wrap">
+      <input type="text" id="search" placeholder="Search contacts or sites…" autocomplete="off">
+    </div>
+    <div id="contact-list"></div>
+  </div>
+  <div id="panel">
+    <div class="panel-empty" id="empty-state">
+      <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#2c3e50" stroke-width="1.2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <p>Select a contact or create a new one</p>
+    </div>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div id="qr-modal">
+  <div id="qr-box">
+    <h3>Phone / MECARD QR Code</h3>
+    <canvas id="qr-canvas"></canvas>
+    <div id="qr-label"></div>
+    <button id="qr-close">Close</button>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirm-modal">
+  <div id="confirm-box">
+    <p id="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-cancel" id="confirm-no">Cancel</button>
+      <button class="btn btn-delete" id="confirm-yes">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Merge Modal -->
+<div id="merge-modal">
+  <div id="merge-box">
+    <h3>Load JS</h3>
+    <p id="merge-msg"></p>
+    <div class="merge-actions">
+      <button class="btn btn-cancel" id="merge-cancel">Cancel</button>
+      <button class="btn btn-edit" id="merge-merge">Merge</button>
+      <button class="btn btn-delete" id="merge-replace">Replace All</button>
+    </div>
+  </div>
+</div>
+
+<script src="contacts.js"></script>
+<script>
+/* ============================================================
+   QR Code Generator — qrcode-generator by Kazuhiko Arase
+   MIT License  https://github.com/kazuhikoarase/qrcode-generator
+   ============================================================ */
+var qrcode = (function() {
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+    var PAD0 = 0xEC, PAD1 = 0x11;
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = ErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = (function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var i = 0; i < moduleCount; i++) {
+          modules[i] = new Array(moduleCount);
+          for (var j = 0; j < moduleCount; j++) modules[i][j] = null;
+        }
+        return modules;
+      })(_moduleCount);
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+      if (_typeNumber >= 7) setupTypeNumber(test);
+      if (_dataCache == null) _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+      for (var r = -1; r <= 7; r++) {
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+        for (var c = -1; c <= 7; c++) {
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+          if ((0 <= r && r <= 6 && (c === 0 || c === 6))
+              || (0 <= c && c <= 6 && (r === 0 || r === 6))
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+      var minLostPoint = 0, pattern = 0;
+      for (var i = 0; i < 8; i++) {
+        makeImpl(true, i);
+        var lostPoint = QRUtil.getLostPoint(_this);
+        if (i === 0 || minLostPoint > lostPoint) { minLostPoint = lostPoint; pattern = i; }
+      }
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+      for (var r = 8; r < _moduleCount - 8; r++) {
+        if (_modules[r][6] != null) continue;
+        _modules[r][6] = (r % 2 === 0);
+      }
+      for (var c = 8; c < _moduleCount - 8; c++) {
+        if (_modules[6][c] != null) continue;
+        _modules[6][c] = (c % 2 === 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+      for (var i = 0; i < pos.length; i++) {
+        for (var j = 0; j < pos.length; j++) {
+          var row = pos[i], col = pos[j];
+          if (_modules[row][col] != null) continue;
+          for (var r = -2; r <= 2; r++) {
+            for (var c = -2; c <= 2; c++) {
+              if (r === -2 || r === 2 || c === -2 || c === 2 || (r === 0 && c === 0)) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+      for (var i = 0; i < 18; i++) {
+        var mod = (!test && ((bits >> i) & 1) === 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+      for (var i = 0; i < 18; i++) {
+        var mod = (!test && ((bits >> i) & 1) === 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+      for (var i = 0; i < 15; i++) {
+        var mod = (!test && ((bits >> i) & 1) === 1);
+        if (i < 6) _modules[i][8] = mod;
+        else if (i < 8) _modules[i + 1][8] = mod;
+        else _modules[_moduleCount - 15 + i][8] = mod;
+      }
+      for (var i = 0; i < 15; i++) {
+        var mod = (!test && ((bits >> i) & 1) === 1);
+        if (i < 8) _modules[8][_moduleCount - i - 1] = mod;
+        else if (i < 9) _modules[8][15 - i - 1 + 1] = mod;
+        else _modules[8][15 - i - 1] = mod;
+      }
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+      var inc = -1, row = _moduleCount - 1, bitIndex = 7, byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+        if (col === 6) col--;
+        while (true) {
+          for (var c = 0; c < 2; c++) {
+            if (_modules[row][col - c] == null) {
+              var dark = false;
+              if (byteIndex < data.length) dark = (((data[byteIndex] >>> bitIndex) & 1) === 1);
+              var mask = maskFunc(row, col - c);
+              if (mask) dark = !dark;
+              _modules[row][col - c] = dark;
+              bitIndex--;
+              if (bitIndex === -1) { byteIndex++; bitIndex = 7; }
+            }
+          }
+          row += inc;
+          if (row < 0 || _moduleCount <= row) { row -= inc; inc = -inc; break; }
+        }
+      }
+    };
+
+    _this.addData = function(data, mode) {
+      mode = mode || 'Byte';
+      var newData;
+      switch (mode) {
+        case 'Numeric': newData = new QRNumber(data); break;
+        case 'Alphanumeric': newData = new QRAlphaNum(data); break;
+        case 'Byte': newData = new QR8BitByte(data); break;
+        case 'Kanji': newData = new QRKanji(data); break;
+        default: throw new Error('mode:' + mode);
+      }
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col)
+        throw new Error(row + ',' + col);
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() { return _moduleCount; };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = new QRBitBuffer();
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber));
+            data.write(buffer);
+          }
+          if (buffer.getLengthInBits() <= totalDataCount * 8) break;
+        }
+        _typeNumber = typeNumber;
+      }
+      makeImpl(false, getBestMaskPattern());
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+      cellSize = cellSize || 2; margin = (typeof margin === 'undefined') ? cellSize * 4 : margin;
+      var qrHtml = ''; qrHtml += '<table style="border-width:' + margin + 'px;border-style:solid;border-color:#fff;border-collapse:separate;background-color:#fff;">';
+      for (var r = 0; r < _this.getModuleCount(); r++) {
+        qrHtml += '<tr>';
+        for (var c = 0; c < _this.getModuleCount(); c++) {
+          qrHtml += '<td style="width:' + cellSize + 'px;height:' + cellSize + 'px;background-color:' + (_this.isDark(r, c) ? '#000' : '#fff') + ';" />';
+        }
+        qrHtml += '</tr>';
+      }
+      qrHtml += '</table>'; return qrHtml;
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+      cellSize = cellSize || 2; margin = (typeof margin === 'undefined') ? cellSize * 4 : margin;
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin, max = size - margin;
+      return createImgTag(size, size, function(x, y) {
+        if (x >= min && x < max && y >= min && y < max) {
+          var c = Math.floor((x - min) / cellSize), r = Math.floor((y - min) / cellSize);
+          return _this.isDark(r, c) ? 0 : 1;
+        } else return 1;
+      }, alt);
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt) {
+      cellSize = cellSize || 2; margin = (typeof margin === 'undefined') ? cellSize * 4 : margin;
+      var mo = _this.getModuleCount(); var size = mo * cellSize + margin * 2;
+      var tag = ''; tag += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      tag += ' width="' + size + 'px" height="' + size + 'px"';
+      if (alt) tag += ' role="img" aria-label="' + alt + '"';
+      tag += '>'; tag += '<rect width="100%" height="100%" fill="white" cx="0" cy="0" />';
+      for (var r = 0; r < mo; r++) {
+        for (var c = 0; c < mo; c++) {
+          if (_this.isDark(r, c)) {
+            var x = c * cellSize + margin, y = r * cellSize + margin;
+            tag += '<rect width="' + cellSize + 'px" height="' + cellSize + 'px" fill="black" x="' + x + 'px" y="' + y + 'px" />';
+          }
+        }
+      }
+      tag += '</svg>'; return tag;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+      cellSize = cellSize || 2; margin = (typeof margin === 'undefined') ? cellSize * 4 : margin;
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin, max = size - margin;
+      return createDataURL(size, size, function(x, y) {
+        if (x >= min && x < max && y >= min && y < max) {
+          var c = Math.floor((x - min) / cellSize), r = Math.floor((y - min) / cellSize);
+          return _this.isDark(r, c) ? 0 : 1;
+        } else return 1;
+      });
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1; margin = (typeof margin === 'undefined') ? cellSize * 2 : margin;
+      var W = '&nbsp;&nbsp;', B = '&#9608;&#9608;';
+      if (cellSize > 1) { W = Array(cellSize + 1).join('&nbsp;&nbsp;'); B = Array(cellSize + 1).join('&#9608;&#9608;'); }
+      var mc = _this.getModuleCount(), str = '';
+      var ml = Array(margin / cellSize + 1).join(W);
+      for (var r = 0; r < mc; r++) {
+        var mr = Array(Math.ceil(margin / cellSize / 2) + 1).join(W);
+        for (var c = 0; c < mc; c++) mr += (_this.isDark(r, c)) ? B : W;
+        mr += ml;
+        for (var i = 0; i < cellSize; i++) str += mr + '\n';
+      }
+      var mt = Array(Math.ceil(margin / cellSize / 2) + 1).join(Array(mc + margin / cellSize + 1).join(W) + '\n');
+      return mt + str + mt;
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? '#000' : '#fff';
+          context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  var createImgTag = function(width, height, getPixel, alt) {
+    var bmp = new GIFImage(width, height);
+    for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) bmp.setPixel(x, y, getPixel(x, y));
+    var tag = '<img src="' + bmp.toDataURL() + '"';
+    if (alt) tag += ' alt="' + alt + '"';
+    tag += ' width="' + width + '" height="' + height + '"';
+    tag += '/>'; return tag;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var bmp = new GIFImage(width, height);
+    for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) bmp.setPixel(x, y, getPixel(x, y));
+    return bmp.toDataURL();
+  };
+
+  var QRMode = { MODE_NUMBER: 1 << 0, MODE_ALPHA_NUM: 1 << 1, MODE_8BIT_BYTE: 1 << 2, MODE_KANJI: 1 << 3 };
+  var ErrorCorrectionLevel = { L: 1, M: 0, Q: 3, H: 2 };
+  var QRMaskPattern = { PATTERN000:0, PATTERN001:1, PATTERN010:2, PATTERN011:3, PATTERN100:4, PATTERN101:5, PATTERN110:6, PATTERN111:7 };
+
+  var QRUtil = (function() {
+    var PATTERN_POSITION_TABLE = [
+      [], [6,18], [6,22], [6,26], [6,30], [6,34],
+      [6,22,38], [6,24,42], [6,26,46], [6,28,50], [6,30,54],
+      [6,32,58], [6,34,62], [6,26,46,66], [6,26,48,70],
+      [6,26,50,74], [6,30,54,78], [6,30,56,82], [6,30,58,86],
+      [6,34,62,90], [6,28,50,72,94], [6,26,50,74,98],
+      [6,30,54,78,102], [6,28,54,80,106], [6,32,58,84,110],
+      [6,30,58,86,114], [6,34,62,90,118], [6,26,50,74,98,122],
+      [6,30,54,78,102,126], [6,26,52,78,104,130],
+      [6,30,56,82,108,134], [6,34,60,86,112,138],
+      [6,30,58,86,114,142], [6,34,62,90,118,146],
+      [6,30,54,78,102,126,150], [6,24,50,76,102,128,154],
+      [6,28,54,80,106,132,158], [6,32,58,84,110,136,162],
+      [6,26,54,82,110,138,166], [6,30,58,86,114,142,170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+    var _this = {};
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G15) >= 0)
+        d ^= (G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G15)));
+      return ((data << 10) | d) ^ G15_MASK;
+    };
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G18) >= 0)
+        d ^= (G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G18)));
+      return (data << 12) | d;
+    };
+    _this.getBCHDigit = function(data) {
+      var digit = 0;
+      while (data !== 0) { digit++; data >>>= 1; }
+      return digit;
+    };
+    _this.getPatternPosition = function(typeNumber) { return PATTERN_POSITION_TABLE[typeNumber - 1]; };
+    _this.getMaskFunction = function(maskPattern) {
+      switch (maskPattern) {
+        case QRMaskPattern.PATTERN000: return function(i,j) { return (i+j)%2===0; };
+        case QRMaskPattern.PATTERN001: return function(i,j) { return i%2===0; };
+        case QRMaskPattern.PATTERN010: return function(i,j) { return j%3===0; };
+        case QRMaskPattern.PATTERN011: return function(i,j) { return (i+j)%3===0; };
+        case QRMaskPattern.PATTERN100: return function(i,j) { return (Math.floor(i/2)+Math.floor(j/3))%2===0; };
+        case QRMaskPattern.PATTERN101: return function(i,j) { return (i*j)%2+(i*j)%3===0; };
+        case QRMaskPattern.PATTERN110: return function(i,j) { return ((i*j)%2+(i*j)%3)%2===0; };
+        case QRMaskPattern.PATTERN111: return function(i,j) { return ((i*j)%3+(i+j)%2)%2===0; };
+        default: throw new Error('bad maskPattern:' + maskPattern);
+      }
+    };
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = new QRPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i++) a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0));
+      return a;
+    };
+    _this.getLengthInBits = function(mode, type) {
+      if (1 <= type && type < 10) {
+        switch (mode) {
+          case QRMode.MODE_NUMBER: return 10; case QRMode.MODE_ALPHA_NUM: return 9;
+          case QRMode.MODE_8BIT_BYTE: return 8; case QRMode.MODE_KANJI: return 8; default: throw new Error('mode:'+mode);
+        }
+      } else if (type < 27) {
+        switch (mode) {
+          case QRMode.MODE_NUMBER: return 12; case QRMode.MODE_ALPHA_NUM: return 11;
+          case QRMode.MODE_8BIT_BYTE: return 16; case QRMode.MODE_KANJI: return 10; default: throw new Error('mode:'+mode);
+        }
+      } else if (type < 41) {
+        switch (mode) {
+          case QRMode.MODE_NUMBER: return 14; case QRMode.MODE_ALPHA_NUM: return 13;
+          case QRMode.MODE_8BIT_BYTE: return 16; case QRMode.MODE_KANJI: return 12; default: throw new Error('mode:'+mode);
+        }
+      } else { throw new Error('type:'+type); }
+    };
+    _this.getLostPoint = function(qrcode) {
+      var moduleCount = qrcode.getModuleCount(), lostPoint = 0;
+      for (var row = 0; row < moduleCount; row++) {
+        for (var col = 0; col < moduleCount; col++) {
+          var sameCount = 0, dark = qrcode.isDark(row, col);
+          for (var r = -1; r <= 1; r++) {
+            if (row + r < 0 || moduleCount <= row + r) continue;
+            for (var c = -1; c <= 1; c++) {
+              if (col + c < 0 || moduleCount <= col + c) continue;
+              if (r === 0 && c === 0) continue;
+              if (dark === qrcode.isDark(row + r, col + c)) sameCount++;
+            }
+          }
+          if (sameCount > 5) lostPoint += (3 + sameCount - 5);
+        }
+      }
+      for (var row = 0; row < moduleCount - 1; row++) {
+        for (var col = 0; col < moduleCount - 1; col++) {
+          var count = 0;
+          if (qrcode.isDark(row, col)) count++;
+          if (qrcode.isDark(row + 1, col)) count++;
+          if (qrcode.isDark(row, col + 1)) count++;
+          if (qrcode.isDark(row + 1, col + 1)) count++;
+          if (count === 0 || count === 4) lostPoint += 3;
+        }
+      }
+      for (var row = 0; row < moduleCount; row++) {
+        for (var col = 0; col < moduleCount - 6; col++) {
+          if (qrcode.isDark(row,col) && !qrcode.isDark(row,col+1) && qrcode.isDark(row,col+2) && qrcode.isDark(row,col+3) && qrcode.isDark(row,col+4) && !qrcode.isDark(row,col+5) && qrcode.isDark(row,col+6)) lostPoint += 40;
+        }
+      }
+      for (var col = 0; col < moduleCount; col++) {
+        for (var row = 0; row < moduleCount - 6; row++) {
+          if (qrcode.isDark(row,col) && !qrcode.isDark(row+1,col) && qrcode.isDark(row+2,col) && qrcode.isDark(row+3,col) && qrcode.isDark(row+4,col) && !qrcode.isDark(row+5,col) && qrcode.isDark(row+6,col)) lostPoint += 40;
+        }
+      }
+      var darkCount = 0;
+      for (var col = 0; col < moduleCount; col++) for (var row = 0; row < moduleCount; row++) if (qrcode.isDark(row, col)) darkCount++;
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+      return lostPoint;
+    };
+    return _this;
+  })();
+
+  var QRMath = (function() {
+    var EXP_TABLE = new Array(256), LOG_TABLE = new Array(256);
+    for (var i = 0; i < 8; i++) EXP_TABLE[i] = 1 << i;
+    for (var i = 8; i < 256; i++) EXP_TABLE[i] = EXP_TABLE[i - 4] ^ EXP_TABLE[i - 5] ^ EXP_TABLE[i - 6] ^ EXP_TABLE[i - 8];
+    for (var i = 0; i < 255; i++) LOG_TABLE[EXP_TABLE[i]] = i;
+    var _this = {};
+    _this.glog = function(n) { if (n < 1) throw new Error('glog(' + n + ')'); return LOG_TABLE[n]; };
+    _this.gexp = function(n) {
+      while (n < 0) n += 255;
+      while (n >= 256) n -= 255;
+      return EXP_TABLE[n];
+    };
+    return _this;
+  })();
+
+  function QRPolynomial(num, shift) {
+    if (num.length === undefined) throw new Error(num.length + '/' + shift);
+    var offset = 0;
+    while (offset < num.length && num[offset] === 0) offset++;
+    this.num = new Array(num.length - offset + shift);
+    for (var i = 0; i < num.length - offset; i++) this.num[i] = num[i + offset];
+  }
+  QRPolynomial.prototype = {
+    get: function(index) { return this.num[index]; },
+    getLength: function() { return this.num.length; },
+    multiply: function(e) {
+      var num = new Array(this.getLength() + e.getLength() - 1);
+      for (var i = 0; i < num.length; i++) num[i] = 0;
+      for (var i = 0; i < this.getLength(); i++)
+        for (var j = 0; j < e.getLength(); j++)
+          num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i)) + QRMath.glog(e.get(j)));
+      return new QRPolynomial(num, 0);
+    },
+    mod: function(e) {
+      if (this.getLength() - e.getLength() < 0) return this;
+      var ratio = QRMath.glog(this.get(0)) - QRMath.glog(e.get(0));
+      var num = new Array(this.getLength());
+      for (var i = 0; i < this.getLength(); i++) num[i] = this.get(i);
+      for (var i = 0; i < e.getLength(); i++) num[i] ^= QRMath.gexp(QRMath.glog(e.get(i)) + ratio);
+      return new QRPolynomial(num, 0).mod(e);
+    }
+  };
+
+  function QRRSBlock(totalCount, dataCount) { this.totalCount = totalCount; this.dataCount = dataCount; }
+  QRRSBlock.RS_BLOCK_TABLE = [
+    [1,26,19],[1,26,16],[1,26,13],[1,26,9],
+    [1,44,34],[1,44,28],[1,44,22],[1,44,16],
+    [1,70,55],[1,70,44],[2,35,17],[2,35,13],
+    [1,100,80],[2,50,32],[2,50,24],[4,25,9],
+    [1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],
+    [2,86,68],[4,43,27],[4,43,19],[4,43,15],
+    [2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],
+    [2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],
+    [2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],
+    [2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],
+    [4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],
+    [2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],
+    [4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],
+    [3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],
+    [5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],
+    [5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],
+    [1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],
+    [5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],
+    [3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],
+    [3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],
+    [4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],
+    [2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],
+    [4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],
+    [6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],
+    [8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],
+    [10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],
+    [8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],
+    [3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],
+    [7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],
+    [5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],
+    [13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],
+    [17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],
+    [17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],
+    [13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],
+    [12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],
+    [6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],
+    [17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],
+    [4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],
+    [20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],
+    [19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]
+  ];
+  QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+    var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectionLevel);
+    if (rsBlock === undefined) throw new Error('bad rs block @ typeNumber:' + typeNumber + '/errorCorrectionLevel:' + errorCorrectionLevel);
+    var length = rsBlock.length / 3, list = [];
+    for (var i = 0; i < length; i++) {
+      var count = rsBlock[i * 3 + 0], totalCount = rsBlock[i * 3 + 1], dataCount = rsBlock[i * 3 + 2];
+      for (var j = 0; j < count; j++) list.push(new QRRSBlock(totalCount, dataCount));
+    }
+    return list;
+  };
+  QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+    switch (errorCorrectionLevel) {
+      case ErrorCorrectionLevel.L: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case ErrorCorrectionLevel.M: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case ErrorCorrectionLevel.Q: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case ErrorCorrectionLevel.H: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default: return undefined;
+    }
+  };
+
+  function QRBitBuffer() { this.buffer = []; this.length = 0; }
+  QRBitBuffer.prototype = {
+    get: function(index) { var bufIndex = Math.floor(index / 8); return ((this.buffer[bufIndex] >>> (7 - index % 8)) & 1) === 1; },
+    put: function(num, length) { for (var i = 0; i < length; i++) this.putBit(((num >>> (length - i - 1)) & 1) === 1); },
+    getLengthInBits: function() { return this.length; },
+    putBit: function(bit) {
+      var bufIndex = Math.floor(this.length / 8);
+      if (this.buffer.length <= bufIndex) this.buffer.push(0);
+      if (bit) this.buffer[bufIndex] |= (0x80 >>> (this.length % 8));
+      this.length++;
+    }
+  };
+
+  var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+    var PAD0 = 0xEC, PAD1 = 0x11;
+    var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+    var buffer = new QRBitBuffer();
+    for (var i = 0; i < dataList.length; i++) {
+      var data = dataList[i];
+      buffer.put(data.getMode(), 4);
+      buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber));
+      data.write(buffer);
+    }
+    var totalDataCount = 0;
+    for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+    if (buffer.getLengthInBits() > totalDataCount * 8) throw new Error('code length overflow. (' + buffer.getLengthInBits() + '>' + totalDataCount * 8 + ')');
+    if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) buffer.put(0, 4);
+    while (buffer.getLengthInBits() % 8 !== 0) buffer.putBit(false);
+    while (true) {
+      if (buffer.getLengthInBits() >= totalDataCount * 8) break;
+      buffer.put(PAD0, 8);
+      if (buffer.getLengthInBits() >= totalDataCount * 8) break;
+      buffer.put(PAD1, 8);
+    }
+    return createBytes(buffer, rsBlocks);
+  };
+
+  var createBytes = function(buffer, rsBlocks) {
+    var offset = 0, maxDcCount = 0, maxEcCount = 0;
+    var dcdata = new Array(rsBlocks.length), ecdata = new Array(rsBlocks.length);
+    for (var r = 0; r < rsBlocks.length; r++) {
+      var dcCount = rsBlocks[r].dataCount, ecCount = rsBlocks[r].totalCount - dcCount;
+      maxDcCount = Math.max(maxDcCount, dcCount);
+      maxEcCount = Math.max(maxEcCount, ecCount);
+      dcdata[r] = new Array(dcCount);
+      for (var i = 0; i < dcdata[r].length; i++) dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+      offset += dcCount;
+      var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+      var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+      var modPoly = rawPoly.mod(rsPoly);
+      ecdata[r] = new Array(rsPoly.getLength() - 1);
+      for (var i = 0; i < ecdata[r].length; i++) {
+        var modIndex = i + modPoly.getLength() - ecdata[r].length;
+        ecdata[r][i] = (modIndex >= 0) ? modPoly.get(modIndex) : 0;
+      }
+    }
+    var totalCodeCount = 0;
+    for (var i = 0; i < rsBlocks.length; i++) totalCodeCount += rsBlocks[i].totalCount;
+    var data = new Array(totalCodeCount), index = 0;
+    for (var i = 0; i < maxDcCount; i++) for (var r = 0; r < rsBlocks.length; r++) if (i < dcdata[r].length) data[index++] = dcdata[r][i];
+    for (var i = 0; i < maxEcCount; i++) for (var r = 0; r < rsBlocks.length; r++) if (i < ecdata[r].length) data[index++] = ecdata[r][i];
+    return data;
+  };
+
+  function QRNumber(data) { this.data = data; }
+  QRNumber.prototype = {
+    getMode: function() { return QRMode.MODE_NUMBER; },
+    getLength: function() { return this.data.length; },
+    write: function(buffer) {
+      var data = this.data;
+      var i = 0;
+      while (i + 2 < data.length) { buffer.put(strToNum(data.substring(i,i+3)), 10); i += 3; }
+      if (i < data.length) {
+        if (data.length - i === 1) buffer.put(strToNum(data.substring(i,i+1)), 4);
+        else buffer.put(strToNum(data.substring(i,i+2)), 7);
+      }
+    }
+  };
+  function strToNum(s) { var n = 0; for (var i = 0; i < s.length; i++) n = n * 10 + (s.charCodeAt(i) - 48); return n; }
+
+  function QRAlphaNum(data) { this.data = data; }
+  QRAlphaNum.prototype = {
+    getMode: function() { return QRMode.MODE_ALPHA_NUM; },
+    getLength: function() { return this.data.length; },
+    write: function(buffer) {
+      var s = this.data, i = 0;
+      while (i + 1 < s.length) { buffer.put(getCode(s.charAt(i)) * 45 + getCode(s.charAt(i+1)), 11); i += 2; }
+      if (i < s.length) buffer.put(getCode(s.charAt(i)), 6);
+    }
+  };
+  var ALPHA_NUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  function getCode(c) { var n = ALPHA_NUM.indexOf(c); if (n < 0) throw new Error(); return n; }
+
+  function QR8BitByte(data) {
+    this.data = data;
+    this.parsedData = [];
+    for (var i = 0; i < data.length; i++) {
+      var code = data.charCodeAt(i);
+      if (code > 0xFFFF) { throw new Error('char out of range'); }
+      if (code > 0x7FF) {
+        this.parsedData.push(0xE0 | ((code & 0xF000) >> 12));
+        this.parsedData.push(0x80 | ((code & 0x0FC0) >> 6));
+        this.parsedData.push(0x80 | (code & 0x003F));
+      } else if (code > 0x7F) {
+        this.parsedData.push(0xC0 | ((code & 0x07C0) >> 6));
+        this.parsedData.push(0x80 | (code & 0x003F));
+      } else {
+        this.parsedData.push(code);
+      }
+    }
+    if (this.parsedData.length !== data.length) {
+      this.parsedData.unshift(191); this.parsedData.unshift(187); this.parsedData.unshift(239);
+    }
+  }
+  QR8BitByte.prototype = {
+    getMode: function() { return QRMode.MODE_8BIT_BYTE; },
+    getLength: function() { return this.parsedData.length; },
+    write: function(buffer) { for (var i = 0; i < this.parsedData.length; i++) buffer.put(this.parsedData[i], 8); }
+  };
+
+  function QRKanji(data) { this.data = data; }
+  QRKanji.prototype = {
+    getMode: function() { return QRMode.MODE_KANJI; },
+    getLength: function() { return Math.floor(this.data.length / 2); },
+    write: function(buffer) {
+      var d = this.data;
+      var i = 0;
+      while (i + 1 < d.length) {
+        var c = ((0xff & d.charCodeAt(i)) << 8) | (0xff & d.charCodeAt(i + 1));
+        if (0x8140 <= c && c <= 0x9FFC) c -= 0x8140;
+        else if (0xE040 <= c && c <= 0xEBBF) c -= 0xC140;
+        else throw new Error('illegal char at ' + (i+1) + '/' + c);
+        var h = (c >> 8) & 0xff, l = c & 0xff;
+        buffer.put(h * 0xC0 + l, 13);
+        i += 2;
+      }
+      if (i < d.length) throw new Error('illegal char at ' + (i+1));
+    }
+  };
+
+  function GIFImage(width, height) {
+    this.width = width; this.height = height;
+    this.data = new Array(width * height);
+  }
+  GIFImage.prototype = {
+    setPixel: function(x, y, pixel) { this.data[y * this.width + x] = pixel; },
+    toDataURL: function() {
+      var s = '', w = this.width, h = this.height;
+      s += 'GIF87a';
+      s += String.fromCharCode(w & 0xff, (w >> 8) & 0xff, h & 0xff, (h >> 8) & 0xff, 0x80, 0, 0);
+      s += String.fromCharCode(0, 0, 0, 255, 255, 255);
+      s += ',';
+      s += String.fromCharCode(0, 0, 0, 0, w & 0xff, (w >> 8) & 0xff, h & 0xff, (h >> 8) & 0xff, 0);
+      s += this.getLZWRaster(2);
+      s += String.fromCharCode(0);
+      s += ';';
+      var u = 'data:image/gif;base64,';
+      var c = typeof btoa !== 'undefined' ? btoa(s) : (function(){
+        var base64='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',out='',i=0;
+        while(i<s.length){var c1=s.charCodeAt(i++),c2=s.charCodeAt(i++),c3=s.charCodeAt(i++);
+        out+=base64.charAt(c1>>2)+base64.charAt(((c1&3)<<4)|(c2>>4))+base64.charAt(((c2&15)<<2)|(c3>>6))+base64.charAt(c3&63);}
+        return out;
+      })();
+      return u + c;
+    },
+    getLZWRaster: function(lzwMinCodeSize) {
+      var clearCode = 1 << lzwMinCodeSize, endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+      var table = {};
+      for (var i = 0; i < clearCode; i++) table[i] = i;
+      table[clearCode] = clearCode; table[endCode] = endCode;
+      var nextCode = endCode + 1;
+      var buf = new ByteArray(), out = new BitWriter(buf), dataIndex = 0;
+      out.write(clearCode, bitLength);
+      var indexStream = [];
+      for (var y = 0; y < this.height; y++) for (var x = 0; x < this.width; x++) indexStream.push(this.data[y * this.width + x]);
+      var indexBuffer = [indexStream[dataIndex++]];
+      while (dataIndex < indexStream.length) {
+        var k = indexStream[dataIndex++];
+        var key = indexBuffer.join(',') + ',' + k;
+        if (table[key] !== undefined) {
+          indexBuffer.push(k);
+        } else {
+          out.write(table[indexBuffer.join(',')], bitLength);
+          if (nextCode < 4096) {
+            if (nextCode === (1 << bitLength)) bitLength++;
+            table[key] = nextCode++;
+          } else {
+            out.write(clearCode, bitLength);
+            bitLength = lzwMinCodeSize + 1;
+            table = {};
+            for (var i = 0; i < clearCode; i++) table[i] = i;
+            nextCode = endCode + 1;
+          }
+          indexBuffer = [k];
+        }
+      }
+      out.write(table[indexBuffer.join(',')], bitLength);
+      out.write(endCode, bitLength);
+      out.flush();
+      var ret = '';
+      while (!buf.isEmpty()) {
+        var bytesLeft = buf.size(), blockSize = Math.min(bytesLeft, 255);
+        ret += String.fromCharCode(blockSize);
+        for (var i = 0; i < blockSize; i++) ret += String.fromCharCode(buf.dequeue());
+      }
+      return ret;
+    }
+  };
+
+  function ByteArray() { this._a = []; }
+  ByteArray.prototype = {
+    size: function() { return this._a.length; },
+    isEmpty: function() { return this._a.length === 0; },
+    enqueue: function(val) { this._a.push(val); },
+    dequeue: function() { return this._a.shift(); }
+  };
+
+  function BitWriter(byteArray) { this._ba = byteArray; this._buf = 0; this._len = 0; }
+  BitWriter.prototype = {
+    write: function(data, length) {
+      this._buf |= (data << this._len); this._len += length;
+      while (this._len >= 8) { this._ba.enqueue(this._buf & 0xFF); this._buf >>= 8; this._len -= 8; }
+    },
+    flush: function() { if (this._len > 0) { this._ba.enqueue(this._buf & 0xFF); this._buf = 0; this._len = 0; } }
+  };
+
+  return qrcode;
+})();
+
+/* ============================================================
+   App Code
+   ============================================================ */
+(function() {
+  'use strict';
+
+  // ── State ──────────────────────────────────────────────────
+  var contacts = [];
+  var selectedId = null;
+  var mode = 'view'; // 'view' | 'add' | 'edit'
+  var pendingLoadData = null;
+
+  // ── Helpers ────────────────────────────────────────────────
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function makeSite() {
+    return { title: '', abbreviation: '', address: '', phone: '', fax: '' };
+  }
+
+  function makeContact() {
+    return { id: uid(), firstName: '', lastName: '', email: '', phone: '', notes: '', sites: [makeSite(), makeSite(), makeSite(), makeSite()] };
+  }
+
+  function getContact(id) {
+    return contacts.find(function(c) { return c.id === id; });
+  }
+
+  function sortedContacts() {
+    return contacts.slice().sort(function(a, b) {
+      var la = (a.lastName + a.firstName).toLowerCase();
+      var lb = (b.lastName + b.firstName).toLowerCase();
+      return la < lb ? -1 : la > lb ? 1 : 0;
+    });
+  }
+
+  function displayName(c) {
+    if (c.lastName && c.firstName) return c.lastName + ', ' + c.firstName;
+    if (c.lastName) return c.lastName;
+    if (c.firstName) return c.firstName;
+    return '(No Name)';
+  }
+
+  function fullName(c) {
+    return [c.firstName, c.lastName].filter(Boolean).join(' ') || '(No Name)';
+  }
+
+  // ── Search / Filter ────────────────────────────────────────
+  function matchesSearch(c, q) {
+    if (!q) return true;
+    q = q.toLowerCase();
+    var fields = [c.firstName, c.lastName, c.email, c.phone, c.notes];
+    for (var i = 0; i < fields.length; i++) {
+      if (fields[i] && fields[i].toLowerCase().includes(q)) return true;
+    }
+    for (var s = 0; s < (c.sites || []).length; s++) {
+      var site = c.sites[s];
+      if (site.title && site.title.toLowerCase().includes(q)) return true;
+      if (site.abbreviation && site.abbreviation.toLowerCase().includes(q)) return true;
+    }
+    return false;
+  }
+
+  // ── Render contact list ────────────────────────────────────
+  function renderList() {
+    var q = document.getElementById('search').value.trim();
+    var list = sortedContacts().filter(function(c) { return matchesSearch(c, q); });
+    var el = document.getElementById('contact-list');
+    if (list.length === 0) {
+      el.innerHTML = '<div class="empty-msg">' + (contacts.length === 0 ? 'No contacts yet.' : 'No matches found.') + '</div>';
+      return;
+    }
+    el.innerHTML = list.map(function(c) {
+      return '<div class="contact-item' + (c.id === selectedId ? ' active' : '') + '" data-id="' + c.id + '">' + esc(displayName(c)) + '</div>';
+    }).join('');
+    el.querySelectorAll('.contact-item').forEach(function(el) {
+      el.addEventListener('click', function() { selectContact(this.dataset.id); });
+    });
+  }
+
+  // ── Select contact ─────────────────────────────────────────
+  function selectContact(id) {
+    selectedId = id;
+    mode = 'view';
+    renderList();
+    renderPanel();
+  }
+
+  // ── Render right panel ─────────────────────────────────────
+  function renderPanel() {
+    var panel = document.getElementById('panel');
+    if (mode === 'add' || mode === 'edit') {
+      renderForm(panel);
+      return;
+    }
+    if (!selectedId) {
+      panel.innerHTML = '<div class="panel-empty" id="empty-state">' +
+        '<svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#2c3e50" stroke-width="1.2">' +
+        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>' +
+        '<circle cx="9" cy="7" r="4"/>' +
+        '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/>' +
+        '<path d="M16 3.13a4 4 0 0 1 0 7.75"/>' +
+        '</svg><p>Select a contact or create a new one</p></div>';
+      return;
+    }
+    var c = getContact(selectedId);
+    if (!c) { selectedId = null; renderPanel(); return; }
+    renderDetailView(panel, c);
+  }
+
+  function renderDetailView(panel, c) {
+    var sites = (c.sites || []).filter(function(s) { return s.title || s.address || s.phone || s.fax || s.abbreviation; });
+    var html = '<div class="card">' +
+      '<div class="detail-header">' +
+      '<div class="detail-name">' + esc(fullName(c)) + '</div>' +
+      '<div class="detail-actions">' +
+      '<button class="btn btn-edit" id="btn-edit-contact">Edit</button>' +
+      '<button class="btn btn-vcard" id="btn-export-vcard">Export vCard</button>' +
+      '<button class="btn btn-delete" id="btn-delete-contact">Delete</button>' +
+      '</div></div>';
+
+    if (c.email) {
+      html += '<div class="field-row"><span class="field-label">Email</span>' +
+        '<span class="field-value"><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' +
+        '<button class="btn-clipboard" data-copy="' + esc(c.email) + '" title="Copy email">&#128203;</button></span></div>';
+    }
+    if (c.phone) {
+      html += '<div class="field-row"><span class="field-label">Phone</span>' +
+        '<span class="field-value"><button class="phone-link" data-phone="' + esc(c.phone) + '" data-name="' + esc(fullName(c)) + '" data-email="' + esc(c.email) + '" data-ln="' + esc(c.lastName) + '" data-fn="' + esc(c.firstName) + '">' + esc(c.phone) + '</button></span></div>';
+    }
+    if (c.notes) {
+      html += '<div class="field-row" style="align-items:flex-start"><span class="field-label">Notes</span>' +
+        '<span class="field-value"><div class="notes-block">' + esc(c.notes) + '</div></span></div>';
+    }
+    html += '</div>';
+
+    if (sites.length > 0) {
+      html += '<div class="card"><h3>Sites</h3>';
+      sites.forEach(function(s) {
+        html += '<div class="site-card">';
+        html += '<div class="site-title-row">';
+        if (s.title) html += '<span class="site-title-text">' + esc(s.title) + '</span>';
+        if (s.abbreviation) html += '<span class="site-abbr-badge">' + esc(s.abbreviation) + '</span>';
+        html += '</div>';
+        if (s.address) {
+          html += '<div class="field-row" style="align-items:flex-start"><span class="field-label">Address</span>' +
+            '<a class="field-value" style="white-space:pre-wrap" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.address) + '" target="_blank" rel="noopener noreferrer">' + esc(s.address) + '</a></div>';
+        }
+        if (s.phone) {
+          html += '<div class="field-row"><span class="field-label">Phone</span>' +
+            '<span class="field-value">' + esc(s.phone) + '</span></div>';
+        }
+        if (s.fax) {
+          html += '<div class="field-row"><span class="field-label">Fax</span>' +
+            '<span class="field-value">' + esc(s.fax) + '</span></div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    panel.innerHTML = html;
+
+    document.getElementById('btn-edit-contact').addEventListener('click', function() {
+      mode = 'edit';
+      renderPanel();
+    });
+    document.getElementById('btn-delete-contact').addEventListener('click', function() {
+      showConfirm('Delete contact "' + fullName(c) + '"? This cannot be undone.', function() {
+        contacts = contacts.filter(function(x) { return x.id !== c.id; });
+        selectedId = null;
+        renderList();
+        renderPanel();
+      });
+    });
+    document.getElementById('btn-export-vcard').addEventListener('click', function() {
+      exportVCard(c);
+    });
+    panel.querySelectorAll('.phone-link').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        showQR(this.dataset.ln, this.dataset.fn, this.dataset.phone, this.dataset.email);
+      });
+    });
+    panel.querySelectorAll('.btn-clipboard').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var self = this;
+        navigator.clipboard.writeText(self.dataset.copy).then(function() {
+          var orig = self.textContent;
+          self.textContent = 'Copied!';
+          self.classList.add('copied');
+          setTimeout(function() { self.textContent = orig; self.classList.remove('copied'); }, 1500);
+        });
+      });
+    });
+  }
+
+  // ── Form render ────────────────────────────────────────────
+  function renderForm(panel) {
+    var c = (mode === 'edit') ? getContact(selectedId) : makeContact();
+    if (!c) { mode = 'view'; renderPanel(); return; }
+
+    var title = (mode === 'add') ? 'New Contact' : 'Edit Contact';
+    var html = '<div class="card"><h2>' + title + '</h2>' +
+      '<div class="form-grid">' +
+      '<div class="form-group"><label>First Name</label><input type="text" id="f-first" value="' + esc(c.firstName) + '" placeholder="First name"></div>' +
+      '<div class="form-group"><label>Last Name</label><input type="text" id="f-last" value="' + esc(c.lastName) + '" placeholder="Last name"></div>' +
+      '<div class="form-group"><label>Email</label><input type="email" id="f-email" value="' + esc(c.email) + '" placeholder="email@example.com"></div>' +
+      '<div class="form-group"><label>Phone</label><input type="tel" id="f-phone" value="' + esc(c.phone) + '" placeholder="+1 555 123 4567"></div>' +
+      '<div class="form-group full"><label>Notes</label><textarea id="f-notes" rows="3" placeholder="Notes…">' + esc(c.notes) + '</textarea></div>' +
+      '</div>' +
+      '</div>';
+
+    // Site sections
+    html += '<div class="card"><h3>Sites</h3>';
+    for (var i = 0; i < 4; i++) {
+      var s = (c.sites && c.sites[i]) ? c.sites[i] : makeSite();
+      var label = 'Site ' + (i + 1);
+      if (s.title) label += ': ' + s.title;
+      html += '<div class="site-section">' +
+        '<button class="site-toggle" data-idx="' + i + '" type="button">' + esc(label) + ' <span class="arrow">&#9654;</span></button>' +
+        '<div class="site-body" id="site-body-' + i + '">' +
+        '<div class="form-grid">' +
+        '<div class="form-group"><label>Title</label><input type="text" id="s' + i + '-title" value="' + esc(s.title) + '" placeholder="Site name" data-site="' + i + '" data-field="title"></div>' +
+        '<div class="form-group"><label>Abbreviation</label><input type="text" id="s' + i + '-abbr" value="' + esc(s.abbreviation) + '" placeholder="ABC" data-site="' + i + '" data-field="abbreviation"></div>' +
+        '<div class="form-group full"><label>Address</label><textarea id="s' + i + '-addr" rows="3" placeholder="Street&#10;City, State ZIP" data-site="' + i + '" data-field="address">' + esc(s.address) + '</textarea></div>' +
+        '<div class="form-group"><label>Phone</label><input type="tel" id="s' + i + '-phone" value="' + esc(s.phone) + '" placeholder="+1 555 000 0000" data-site="' + i + '" data-field="phone"></div>' +
+        '<div class="form-group"><label>Fax</label><input type="tel" id="s' + i + '-fax" value="' + esc(s.fax) + '" placeholder="+1 555 000 0001" data-site="' + i + '" data-field="fax"></div>' +
+        '</div></div></div>';
+    }
+    html += '<div class="form-actions">' +
+      '<button class="btn btn-save" id="btn-form-save">Save Contact</button>' +
+      '<button class="btn btn-cancel" id="btn-form-cancel">Cancel</button>' +
+      '</div></div>';
+
+    panel.innerHTML = html;
+
+    // Toggle site sections
+    panel.querySelectorAll('.site-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = this.dataset.idx;
+        var body = document.getElementById('site-body-' + idx);
+        var open = body.classList.toggle('open');
+        this.classList.toggle('open', open);
+      });
+    });
+
+    // Live update site toggle labels
+    panel.querySelectorAll('input[data-field="title"]').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        var idx = this.dataset.site;
+        var btn = panel.querySelector('.site-toggle[data-idx="' + idx + '"]');
+        var label = 'Site ' + (parseInt(idx) + 1);
+        if (this.value) label += ': ' + this.value;
+        btn.childNodes[0].textContent = label + ' ';
+      });
+    });
+
+    document.getElementById('btn-form-cancel').addEventListener('click', function() {
+      mode = 'view';
+      renderPanel();
+    });
+
+    document.getElementById('btn-form-save').addEventListener('click', function() {
+      saveForm(c);
+    });
+  }
+
+  function saveForm(template) {
+    var c = (mode === 'edit') ? getContact(template.id) : { id: template.id };
+    if (!c && mode === 'edit') { mode = 'view'; renderPanel(); return; }
+
+    c.firstName = document.getElementById('f-first').value.trim();
+    c.lastName  = document.getElementById('f-last').value.trim();
+    c.email     = document.getElementById('f-email').value.trim();
+    c.phone     = document.getElementById('f-phone').value.trim();
+    c.notes     = document.getElementById('f-notes').value.trim();
+    c.sites = [];
+    for (var i = 0; i < 4; i++) {
+      c.sites.push({
+        title:        document.getElementById('s' + i + '-title').value.trim(),
+        abbreviation: document.getElementById('s' + i + '-abbr').value.trim(),
+        address:      document.getElementById('s' + i + '-addr').value.trim(),
+        phone:        document.getElementById('s' + i + '-phone').value.trim(),
+        fax:          document.getElementById('s' + i + '-fax').value.trim()
+      });
+    }
+
+    if (mode === 'add') {
+      contacts.push(c);
+      selectedId = c.id;
+    }
+
+    mode = 'view';
+    renderList();
+    renderPanel();
+  }
+
+  // ── QR Code Modal ──────────────────────────────────────────
+  function showQR(lastName, firstName, phone, email) {
+    var mecard = 'MECARD:N:' + (lastName || '') + ',' + (firstName || '') + ';TEL:' + (phone || '') + ';EMAIL:' + (email || '') + ';;';
+    var canvas = document.getElementById('qr-canvas');
+    var ctx = canvas.getContext('2d');
+
+    var qr, typeNumber = 1;
+    var success = false;
+    while (typeNumber <= 40) {
+      try {
+        qr = qrcode(typeNumber, 'M');
+        qr.addData(mecard, 'Byte');
+        qr.make();
+        success = true;
+        break;
+      } catch(e) {
+        typeNumber++;
+      }
+    }
+
+    if (!success) {
+      alert('Could not generate QR code — data too large.');
+      return;
+    }
+
+    var cellSize = 6;
+    var moduleCount = qr.getModuleCount();
+    var margin = 3 * cellSize;
+    var size = moduleCount * cellSize + margin * 2;
+    canvas.width = size;
+    canvas.height = size;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, size, size);
+    for (var row = 0; row < moduleCount; row++) {
+      for (var col = 0; col < moduleCount; col++) {
+        ctx.fillStyle = qr.isDark(row, col) ? '#000' : '#fff';
+        ctx.fillRect(margin + col * cellSize, margin + row * cellSize, cellSize, cellSize);
+      }
+    }
+
+    document.getElementById('qr-label').textContent = mecard;
+    var modal = document.getElementById('qr-modal');
+    modal.classList.add('show');
+  }
+
+  document.getElementById('qr-close').addEventListener('click', function() {
+    document.getElementById('qr-modal').classList.remove('show');
+  });
+  document.getElementById('qr-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+
+  // ── Confirm Modal ──────────────────────────────────────────
+  var confirmCallback = null;
+  function showConfirm(msg, onYes) {
+    document.getElementById('confirm-msg').textContent = msg;
+    confirmCallback = onYes;
+    document.getElementById('confirm-modal').classList.add('show');
+  }
+  document.getElementById('confirm-yes').addEventListener('click', function() {
+    document.getElementById('confirm-modal').classList.remove('show');
+    if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+  });
+  document.getElementById('confirm-no').addEventListener('click', function() {
+    document.getElementById('confirm-modal').classList.remove('show');
+    confirmCallback = null;
+  });
+  document.getElementById('confirm-modal').addEventListener('click', function(e) {
+    if (e.target === this) { this.classList.remove('show'); confirmCallback = null; }
+  });
+
+  // ── vCard Export ───────────────────────────────────────────
+  function vCardEscape(s) {
+    if (!s) return '';
+    return s.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  }
+
+  function exportVCard(c) {
+    var lines = [];
+    lines.push('BEGIN:VCARD');
+    lines.push('VERSION:3.0');
+    lines.push('N:' + vCardEscape(c.lastName) + ';' + vCardEscape(c.firstName) + ';;;');
+    lines.push('FN:' + vCardEscape(fullName(c)));
+    if (c.email) lines.push('EMAIL;TYPE=INTERNET:' + vCardEscape(c.email));
+    if (c.phone) lines.push('TEL;TYPE=CELL:' + vCardEscape(c.phone));
+
+    var itemNum = 1;
+    (c.sites || []).forEach(function(s) {
+      if (!s.title && !s.address && !s.phone && !s.fax) return;
+      var pfx = 'item' + itemNum;
+      var addrVal = ';;' + vCardEscape(s.address || '').replace(/\n/g,' ') + ';;;;';
+      lines.push(pfx + '.ADR;TYPE=WORK:' + addrVal);
+      var lbl = s.title || '';
+      if (s.abbreviation) lbl += (lbl ? ' (' + s.abbreviation + ')' : s.abbreviation);
+      if (lbl) lines.push(pfx + '.X-ABLABEL:' + vCardEscape(lbl));
+      if (s.phone) lines.push(pfx + '.TEL;TYPE=WORK:' + vCardEscape(s.phone));
+      if (s.fax)   lines.push(pfx + '.TEL;TYPE=FAX:'  + vCardEscape(s.fax));
+      itemNum++;
+    });
+
+    if (c.notes) lines.push('NOTE:' + vCardEscape(c.notes));
+    lines.push('END:VCARD');
+
+    var content = lines.join('\r\n');
+    var fn = (c.lastName || 'Contact') + '_' + (c.firstName || '') + '.vcf';
+    fn = fn.replace(/[^\w\-.]/g, '_');
+    downloadText(content, fn, 'text/vcard');
+  }
+
+  // ── JS Save/Load ───────────────────────────────────────────
+  document.getElementById('btn-save-json').addEventListener('click', function() {
+    if (contacts.length === 0) { alert('No contacts to save.'); return; }
+    var js = 'var CONTACTS_DATA = ' + JSON.stringify(contacts, null, 2) + ';\n';
+    downloadText(js, 'contacts.js', 'application/javascript');
+  });
+
+  document.getElementById('btn-load-json').addEventListener('click', function() {
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-input').click();
+  });
+
+  document.getElementById('file-input').addEventListener('change', function() {
+    var file = this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var src = e.target.result;
+        var match = src.match(/var\s+CONTACTS_DATA\s*=\s*([\s\S]*?);\s*$/m);
+        if (!match) throw new Error('Expected var CONTACTS_DATA = [...]; assignment');
+        var data = JSON.parse(match[1]);
+        if (!Array.isArray(data)) throw new Error('Expected an array');
+        // Normalise each contact
+        data = data.map(function(c) {
+          return {
+            id:        c.id || uid(),
+            firstName: c.firstName || '',
+            lastName:  c.lastName  || '',
+            email:     c.email     || '',
+            phone:     c.phone     || '',
+            notes:     c.notes     || '',
+            sites: (c.sites || [makeSite(),makeSite(),makeSite(),makeSite()]).map(function(s) {
+              return { title: s.title||'', abbreviation: s.abbreviation||'', address: s.address||'', phone: s.phone||'', fax: s.fax||'' };
+            })
+          };
+        });
+        pendingLoadData = data;
+        if (contacts.length > 0) {
+          document.getElementById('merge-msg').textContent =
+            'You already have ' + contacts.length + ' contact(s). Would you like to merge the ' + data.length + ' loaded contact(s) with the existing ones, or replace all existing contacts?';
+          document.getElementById('merge-modal').classList.add('show');
+        } else {
+          contacts = data;
+          selectedId = null;
+          mode = 'view';
+          renderList();
+          renderPanel();
+          pendingLoadData = null;
+        }
+      } catch(err) {
+        alert('Failed to load JS: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('merge-cancel').addEventListener('click', function() {
+    document.getElementById('merge-modal').classList.remove('show');
+    pendingLoadData = null;
+  });
+  document.getElementById('merge-merge').addEventListener('click', function() {
+    document.getElementById('merge-modal').classList.remove('show');
+    if (pendingLoadData) {
+      // Merge: add contacts whose id doesn't already exist
+      var existingIds = contacts.map(function(c) { return c.id; });
+      pendingLoadData.forEach(function(c) {
+        if (!existingIds.includes(c.id)) contacts.push(c);
+        else {
+          // overwrite with loaded version
+          var idx = contacts.findIndex(function(x) { return x.id === c.id; });
+          if (idx !== -1) contacts[idx] = c;
+        }
+      });
+      pendingLoadData = null;
+      renderList();
+      renderPanel();
+    }
+  });
+  document.getElementById('merge-replace').addEventListener('click', function() {
+    document.getElementById('merge-modal').classList.remove('show');
+    if (pendingLoadData) {
+      contacts = pendingLoadData;
+      pendingLoadData = null;
+      selectedId = null;
+      mode = 'view';
+      renderList();
+      renderPanel();
+    }
+  });
+
+  // ── New Contact button ─────────────────────────────────────
+  document.getElementById('btn-new').addEventListener('click', function() {
+    selectedId = null;
+    mode = 'add';
+    renderList();
+    renderPanel();
+  });
+
+  // ── Search ─────────────────────────────────────────────────
+  document.getElementById('search').addEventListener('input', function() {
+    renderList();
+  });
+
+  // ── Download helper ────────────────────────────────────────
+  function downloadText(content, filename, mimeType) {
+    var blob = new Blob([content], { type: mimeType });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  }
+
+  // ── Keyboard shortcut: Escape closes modals ────────────────
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('qr-modal').classList.remove('show');
+      document.getElementById('confirm-modal').classList.remove('show');
+      document.getElementById('merge-modal').classList.remove('show');
+    }
+  });
+
+  // ── Auto-load contacts.js ──────────────────────────────────
+  function normalizeContacts(data) {
+    return data.map(function(c) {
+      return {
+        id:        c.id || uid(),
+        firstName: c.firstName || '',
+        lastName:  c.lastName  || '',
+        email:     c.email     || '',
+        phone:     c.phone     || '',
+        notes:     c.notes     || '',
+        sites: (c.sites || [makeSite(),makeSite(),makeSite(),makeSite()]).map(function(s) {
+          return { title: s.title||'', abbreviation: s.abbreviation||'', address: s.address||'', phone: s.phone||'', fax: s.fax||'' };
+        })
+      };
+    });
+  }
+  if (typeof CONTACTS_DATA !== 'undefined' && Array.isArray(CONTACTS_DATA)) {
+    contacts = normalizeContacts(CONTACTS_DATA);
+  }
+  renderList();
+  renderPanel();
+
+  // ── Initial render ─────────────────────────────────────────
+  // (deferred to auto-load callback above)
+
+})();
+</script>
+</body>
+</html>

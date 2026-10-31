@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Formatter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+    }
+    h1 { text-align: center; }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    label { font-weight: bold; }
+    select, input[type="file"] {
+      padding: 6px;
+      font-size: 14px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      background: #0070c0;
+    }
+    button:hover { background: #005a9e; }
+    #output {
+      width: 100%;
+      min-height: 300px;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+    .copy-msg {
+      color: green;
+      font-weight: bold;
+      margin-left: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .copy-msg.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <h1>CSV Formatter</h1>
+
+  <div class="controls">
+    <label for="mode">Format:</label>
+    <select id="mode">
+      <option value="illness">Illness Tracker</option>
+      <option value="epass">ePass</option>
+    </select>
+
+    <input type="file" id="csvFile" accept=".csv">
+  </div>
+
+  <textarea id="output" readonly></textarea>
+
+  <div style="display:flex;align-items:center;">
+    <button id="copyBtn">Copy to Clipboard</button>
+    <span class="copy-msg" id="copyMsg">Copied!</span>
+  </div>
+
+  <script>
+    const csvFileInput = document.getElementById('csvFile');
+    const modeSelect = document.getElementById('mode');
+    const output = document.getElementById('output');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyMsg = document.getElementById('copyMsg');
+
+    function parseCSV(text) {
+      return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => {
+          // Handle quoted fields
+          const fields = [];
+          let current = '';
+          let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+              inQuotes = !inQuotes;
+            } else if (ch === ',' && !inQuotes) {
+              fields.push(current.trim());
+              current = '';
+            } else {
+              current += ch;
+            }
+          }
+          fields.push(current.trim());
+          return fields;
+        });
+    }
+
+    function formatRows(rows, mode) {
+      return rows.map(cols => {
+        const lastName = cols[0] || '';
+        const firstName = cols[1] || '';
+        if (mode === 'illness') {
+          return `'${lastName}, ${firstName}',`;
+        } else {
+          const email = cols[2] || '';
+          return `{ name: "${lastName}, ${firstName}", email: "${email}" },`;
+        }
+      }).join('\n');
+    }
+
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const rows = parseCSV(e.target.result);
+        output.value = formatRows(rows, modeSelect.value);
+      };
+      reader.readAsText(file);
+    }
+
+    csvFileInput.addEventListener('change', function () {
+      if (this.files.length) processFile(this.files[0]);
+    });
+
+    modeSelect.addEventListener('change', function () {
+      if (csvFileInput.files.length) processFile(csvFileInput.files[0]);
+    });
+
+    copyBtn.addEventListener('click', function () {
+      navigator.clipboard.writeText(output.value).then(() => {
+        copyMsg.classList.add('show');
+        setTimeout(() => copyMsg.classList.remove('show'), 1500);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Information Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        .form-section h2 {
+            margin-top: 0;
+            color: #3498db;
+            font-size: 1.2em;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], 
+        input[type="number"], 
+        input[type="date"],
+        select, 
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .radio-group {
+            margin-bottom: 10px;
+        }
+        .radio-group label {
+            display: inline;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #generate-btn {
+            background-color: #2ecc71;
+            font-size: 1.1em;
+            margin-top: 10px;
+            padding: 12px;
+            width: 100%;
+        }
+        #generate-btn:hover {
+            background-color: #27ae60;
+        }
+        #resultTextarea {
+            min-height: 150px;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+        }
+        .diagnosis-section {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .diagnosis-section input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        select[multiple] {
+            height: 120px;
+        }
+        td {
+        	padding: 0 30px;
+        }
+        #rn-setup {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        #rn-setup p {
+            margin-top: 0;
+            color: #856404;
+        }
+        #rn-setup .form-group {
+            margin-bottom: 10px;
+        }
+        #rn-setup button {
+            background-color: #ffc107;
+            color: #856404;
+            font-weight: bold;
+        }
+        #rn-setup button:hover {
+            background-color: #e0a800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="rn-setup" style="display:none;">
+            <p><strong>Setup Required:</strong> Your name is not yet configured for this form. Please enter them below so they can be included in the generated health summary signature.</p>
+            <div class="form-group">
+                <label for="rn-input">Your Name (e.g. Jane Smith, RN):</label>
+                <input type="text" id="rn-input" placeholder="Jane Smith, RN">
+            </div>
+            <button type="button" id="rn-setup-btn">Save &amp; Continue</button>
+        </div>
+        <h1>Health Information Form</h1>
+        
+        <form id="healthForm">
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h2>Personal Information</h2>
+                <div class="form-group">
+                    <label for="fullname">Full Name (Lastname, Firstname):</label>
+                    <input type="text" id="fullname" name="fullname" placeholder="Doe, John" required>
+                </div>
+                <div class="form-group">
+                    <label for="age">Age:</label>
+                    <input type="number" id="age" name="age" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label>Gender:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="gender-male" name="gender" value="male" required>
+                        <label for="gender-male">Male</label>
+                        <input type="radio" id="gender-female" name="gender" value="female">
+                        <label for="gender-female">Female</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Diagnosis Section -->
+            <div class="form-section">
+                <h2>Diagnosis Information</h2>
+                <div class="diagnosis-section">
+                    <input type="text" id="diagnosis-input" placeholder="Enter diagnosis">
+                    <button type="button" id="add-diagnosis">Add Diagnosis</button>
+                </div>
+                <div class="form-group">
+                    <label for="diagnosis-select">Diagnoses:</label>
+                    <select id="diagnosis-select" size="4"></select>
+                </div>
+            </div>
+            
+            <!-- Medical Status Section -->
+            <div class="form-section">
+                <h2>Medical Status</h2>
+                <table border=0><tr><td>
+                <div class="form-group">
+                    <label>Care Plan for School:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="care-plan-yes" name="carePlan" value="yes" required>
+                        <label for="care-plan-yes">Yes</label>
+                        <input type="radio" id="care-plan-no" name="carePlan" value="no">
+                        <label for="care-plan-no">No</label>
+                    </div>
+                </div></td>
+                <td>
+                <div class="form-group">
+                    <label>Home Medications:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="home-meds-yes" name="homeMeds" value="yes" required>
+                        <label for="home-meds-yes">Yes</label>
+                        <input type="radio" id="home-meds-no" name="homeMeds" value="no">
+                        <label for="home-meds-no">No</label>
+                    </div>
+                </div></td>
+                <td>
+                <div class="form-group">
+                    <label>Emergency Dept. Visits:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="ed-visit-yes" name="edVisit" value="yes" required>
+                        <label for="ed-visit-yes">Yes</label>
+                        <input type="radio" id="ed-visit-no" name="edVisit" value="no">
+                        <label for="ed-visit-no">No</label>
+                    </div>
+                </div></td>
+                </tr>
+                <tr><td>
+                <div class="form-group">
+                    <label>School Medications:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="school-meds-yes" name="schoolMeds" value="yes" required>
+                        <label for="school-meds-yes">Yes</label>
+                        <input type="radio" id="school-meds-no" name="schoolMeds" value="no">
+                        <label for="school-meds-no">No</label>
+                    </div>
+                </div></td>
+                <td>
+                <div class="form-group">
+                    <label>Rescue Medications:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="rescue-meds-yes" name="rescueMeds" value="yes" required>
+                        <label for="rescue-meds-yes">Yes</label>
+                        <input type="radio" id="rescue-meds-no" name="rescueMeds" value="no">
+                        <label for="rescue-meds-no">No</label>
+                    </div>
+                </div></td>
+                 <td>
+                <div class="form-group">
+                    <label>Hospitalizations:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="hosp-yes" name="hosp" value="yes" required>
+                        <label for="hosp-yes">Yes</label>
+                        <input type="radio" id="hosp-no" name="hosp" value="no">
+                        <label for="hosp-no">No</label>
+                    </div>
+                </div></td>
+                </tr></table>
+            </div>
+            
+            <!-- Screening Section -->
+            <div class="form-section">
+                <h2>Health Screenings</h2>
+                <div class="form-group">
+                    <label>Vision Screening:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="vision-passed" name="visionScreen" value="passed" required>
+                        <label for="vision-passed">Passed</label>
+                        <input type="radio" id="vision-failed" name="visionScreen" value="failed">
+                        <label for="vision-failed">Failed</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="visionDate">Vision Screening Date:</label>
+                    <input type="date" id="visionDate" name="visionDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Hearing Screening:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="hearing-passed" name="hearingScreen" value="passed" required>
+                        <label for="hearing-passed">Passed</label>
+                        <input type="radio" id="hearing-failed" name="hearingScreen" value="failed">
+                        <label for="hearing-failed">Failed</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="hearingDate">Hearing Screening Date:</label>
+                    <input type="date" id="hearingDate" name="hearingDate" required>
+                </div>
+                <div class="form-group">
+                    <table border=0><tr><td>
+                    <label for="immun">Immunization Compliant</label></td><td>
+                    <input type="checkbox" id="immun" name="immun"></td></tr></table>
+                </div>
+            </div>
+            
+            <!-- Providers Section -->
+            <div class="form-section">
+                <h2>Healthcare Providers</h2>
+                <div class="form-group">
+                    <label for="providers">Select Providers:</label>
+                    <select id="providers" name="providers" multiple required>
+                        <option value="a primary care provider">Primary Care Provider</option>
+                        <option value="dentistry">Dentistry</option>
+                        <option value="a vision provider">Vision Provider</option>
+			<option value="audiology">Audiology</option>
+                        <option value="neurology">Neurology</option>
+                        <option value="gastroenterology">Gastroenterology</option>
+			<option value="endocrinology">Endocrinology</option>
+                        <option value="cardiology">Cardiology</option>
+                        <option value="pulmonology">Pulmonology</option>
+                        <option value="orthopedics">Orthopedics</option>
+                        <option value="ENT">ENT</option>
+                        <option value="mental health provider">Mental Health Provider</option>
+                        <option value="speech therapy">Speech Therapy</option>
+                        <option value="occupational therapy">Occupational Therapy</option>
+                        <option value="physical therapy">Physical Therapy</option>
+                    </select>
+                    <small>Hold Ctrl to select multiple options</small>
+                </div>
+                <div class="form-group">
+                    <label for="additional-providers">Additional Providers (one per line):</label>
+                    <textarea id="additional-providers" name="additional-providers" rows="4" placeholder="Enter additional providers, one per line"></textarea>
+                </div>
+            </div>
+            
+            <!-- Additional Information Section -->
+            <div class="form-section">
+                <h2>Additional Information</h2>
+                <div class="form-group">
+                    <label for="allergies">Allergies:</label>
+                    <input type="text" id="allergies" name="allergies" placeholder="List any allergies, or leave blank if none">
+                </div>
+                <div class="form-group">
+                    <label for="diet">Dietary Restrictions:</label>
+                    <input type="text" id="diet" name="diet" placeholder="List any dietary restrictions, or leave blank if none">
+                </div>
+            </div>
+            
+            <!-- Generate Button -->
+            <button type="button" id="generate-btn">Generate Health Information Summary</button>
+            
+            <!-- Result Textarea -->
+            <textarea id="resultTextarea" placeholder="Health information summary will appear here after clicking the button above." rows="10"></textarea>
+        </form>
+    </div>
+
+    <script>
+        // Read URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const rn = urlParams.get('rn');
+        const rnemail = urlParams.get('rnemail');
+
+        // Show setup form if rn is not set
+        if (!rn) {
+            document.getElementById('rn-setup').style.display = 'block';
+        }
+
+        // Handle setup button: reload page with rn and rnemail as URL params
+        document.getElementById('rn-setup-btn').addEventListener('click', function() {
+            const rnValue = document.getElementById('rn-input').value.trim();
+            if (!rnValue) {
+                alert('Please enter your name.');
+                return;
+            }
+            const params = new URLSearchParams();
+            params.set('rn', rnValue);
+               window.location.search = params.toString();
+        });
+
+        // Initialize diagnoses array to store added diagnoses
+        let diagnoses = [];
+
+        // Event listener for adding diagnosis to the list
+        document.getElementById('add-diagnosis').addEventListener('click', function() {
+            const diagnosisInput = document.getElementById('diagnosis-input');
+            const diagnosis = diagnosisInput.value.trim();
+            
+            if (diagnosis) {
+                // Add to array
+                diagnoses.push(diagnosis);
+                
+                // Add to select box
+                const diagnosisSelect = document.getElementById('diagnosis-select');
+                const option = document.createElement('option');
+                option.text = diagnosis;
+                option.value = diagnosis;
+                diagnosisSelect.add(option);
+                
+                // Clear the input
+                diagnosisInput.value = '';
+            }
+        });
+
+        // Event listener for generating the paragraph
+        document.getElementById('generate-btn').addEventListener('click', function() {
+            // Get form values
+            const fullname = document.getElementById('fullname').value.trim();
+            const age = document.getElementById('age').value;
+            
+            // Validate required fields
+            if (!fullname || !age) {
+                alert('Please fill out all required fields.');
+                return;
+            }
+            
+            // Extract first name from fullname (after the comma)
+            let fname;
+            if (fullname.includes(',')) {
+                fname = fullname.split(',')[1].trim();
+            } else {
+                fname = fullname.split(' ')[0].trim();
+            }
+            
+            // Get gender and set pronouns
+            let gender, pronoun1cap, pronoun1, pronoun2cap, pronoun2;
+            
+            if (document.getElementById('gender-male').checked) {
+                gender = 'male';
+                pronoun1cap = 'He';
+                pronoun1 = 'he';
+                pronoun2cap = 'His';
+                pronoun2 = 'his';
+            } else if (document.getElementById('gender-female').checked) {
+                gender = 'female';
+                pronoun1cap = 'She';
+                pronoun1 = 'she';
+                pronoun2cap = 'Her';
+                pronoun2 = 'her';
+            } else {
+                alert('Please select a gender.');
+                return;
+            }
+            
+            // Determine article based on age
+            let article;
+            if (age == 8 || age == 11 || age == 18) {
+                article = 'an';
+            } else {
+                article = 'a';
+            }
+            
+            // Process care plan (only if selected)
+            let carePlan = '';
+            if (document.getElementById('care-plan-no').checked) {
+                carePlan = 'has no healthcare plan available for school. ';
+            } else if (document.getElementById('care-plan-yes').checked) {
+                carePlan = 'has a healthcare plan available for school. ';
+            }
+            
+            // Process medications (only if selected)
+            let homeMeds = '', schoolMeds = '', rescueMeds = '';
+            
+            if (document.getElementById('home-meds-no').checked) {
+                homeMeds = 'takes no medication at home regularly. ';
+            } else if (document.getElementById('home-meds-yes').checked) {
+                homeMeds = 'takes medication at home regularly. ';
+            }
+            
+            if (document.getElementById('school-meds-no').checked) {
+                schoolMeds = 'takes no medication at school. ';
+            } else if (document.getElementById('school-meds-yes').checked) {
+                schoolMeds = 'takes routine medication at school. ';
+            }
+            
+            if (document.getElementById('rescue-meds-yes').checked) {
+                rescueMeds = 'has rescue medication available at school. ';
+            } else if (document.getElementById('rescue-meds-no').checked) {
+                rescueMeds = 'does not require rescue medication at school. ';
+            }
+            
+            // Process ED visits and hospitalizations (combine if both are "no")
+            let edHospText = '';
+            const edVisitNo = document.getElementById('ed-visit-no').checked;
+            const edVisitYes = document.getElementById('ed-visit-yes').checked;
+            const hospNo = document.getElementById('hosp-no').checked;
+            const hospYes = document.getElementById('hosp-yes').checked;
+            
+            if (edVisitNo && hospNo) {
+                // Combine into single statement
+                edHospText = 'has not had any emergency department visits or hospitalizations within the last 3 years. ';
+            } else {
+                // Separate statements (only if selected)
+                if (edVisitNo) {
+                    edHospText += 'has not had any emergency department visits within the last 3 years. ';
+                } else if (edVisitYes) {
+                    edHospText += 'has had an emergency department visit within the last 3 years. ';
+                }
+                if (hospNo) {
+                    edHospText += `${edHospText ? pronoun1cap + ' ' : ''}has not been hospitalized within the last 3 years. `;
+                } else if (hospYes) {
+                    edHospText += `${edHospText ? pronoun1cap + ' ' : ''}has been hospitalized within the last 3 years. `;
+                }
+            }
+            
+            
+            // Process screening results
+            const visionScreenEl = document.querySelector('input[name="visionScreen"]:checked');
+            const hearingScreenEl = document.querySelector('input[name="hearingScreen"]:checked');
+            const visionScreen = visionScreenEl ? visionScreenEl.value : null;
+            const hearingScreen = hearingScreenEl ? hearingScreenEl.value : null;
+            
+            // Get dates
+            const visionDateValue = document.getElementById('visionDate').value;
+            const hearingDateValue = document.getElementById('hearingDate').value;
+            const visionDate = visionDateValue ? new Date(visionDateValue + "T00:00:00") : null;
+            const hearingDate = hearingDateValue ? new Date(hearingDateValue + "T00:00:00") : null;
+            
+            // Format dates
+            const visionDateFormatted = visionDate ? visionDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }) : null;
+            
+            const hearingDateFormatted = hearingDate ? hearingDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }) : null;
+            
+            // Build screening text (combine if same result and same date)
+            let screeningText = '';
+            if (visionScreen && hearingScreen && visionDateValue === hearingDateValue && visionScreen === hearingScreen) {
+                // Combine into single statement
+                screeningText = `${visionScreen} ${pronoun2} hearing and vision screen on ${visionDateFormatted}. `;
+            } else {
+                // Separate statements (only if selected)
+                if (visionScreen && visionDateFormatted) {
+                    screeningText += `${visionScreen} ${pronoun2} vision screen on ${visionDateFormatted}. `;
+                }
+                if (hearingScreen && hearingDateFormatted) {
+                    screeningText += `${screeningText ? pronoun1cap + ' ' : ''}${hearingScreen} ${pronoun2} hearing screen on ${hearingDateFormatted}. `;
+                }
+            }
+            
+            
+            // Process providers
+            const providersSelect = document.getElementById('providers');
+            const selectedProviders = Array.from(providersSelect.selectedOptions).map(option => option.value);
+            
+            // Get additional providers from textarea
+            const additionalProvidersText = document.getElementById('additional-providers').value.trim();
+            const additionalProviders = additionalProvidersText ? 
+                additionalProvidersText.split('\n').map(p => p.trim()).filter(p => p.length > 0) : [];
+            
+            // Combine both provider lists
+            const allProviders = [...selectedProviders, ...additionalProviders];
+            
+            // Format the providers list with commas and "and"
+            let providersText = '';
+            if (allProviders.length === 1) {
+                providersText = allProviders[0];
+            } else if (allProviders.length === 2) {
+                providersText = allProviders[0] + ' and ' + allProviders[1];
+            } else if (allProviders.length > 2) {
+                providersText = allProviders.slice(0, -1).join(', ') + ', and ' + allProviders[allProviders.length - 1];
+            } else {
+                alert('Please select at least one provider.');
+                return;
+            }
+            
+            // Process allergies
+            const allergies = document.getElementById('allergies').value.trim();
+            let ax = '';
+            if (allergies) {
+                ax = ` has allergies to ${allergies}.`;
+            } else {
+                ax = ' has no listed allergies.';
+            }
+            
+            // Process dietary restrictions
+            const diet = document.getElementById('diet').value.trim();
+            let drestrict = '';
+            if (diet) {
+                drestrict = ` has dietary restrictions to ${diet}.`;
+            } else {
+                drestrict = ' has no listed dietary restrictions.';
+            }
+            
+            // Process immunization status
+            let immun = '';
+            if (document.getElementById('immun').checked) {
+                immun = 'compliant';
+            } else {
+                immun = 'non-compliant';
+            }
+            
+            // Format diagnoses list
+            let diagnosisText = '';
+            if (diagnoses.length === 1) {
+                diagnosisText = diagnoses[0];
+            } else if (diagnoses.length === 2) {
+                diagnosisText = diagnoses[0] + ' and ' + diagnoses[1];
+            } else if (diagnoses.length > 2) {
+                diagnosisText = diagnoses.slice(0, -1).join(', ') + ', and ' + diagnoses[diagnoses.length - 1];
+            }
+            
+            // Determine if student has no significant medical history
+            const noSignificantHistory = diagnoses.length === 0;
+            
+            // Get current date in YYYY.MM.DD format
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const currentDate = `${year}.${month}.${day}`;
+            
+            // Generate the paragraph
+            let paragraph = `Health Summary:\n\n`;
+            if (noSignificantHistory) {
+                paragraph += `${fname} is ${article} ${age}-year-old ${gender} with no significant medical history. `;
+            } else {
+                paragraph += `${fname} is ${article} ${age}-year-old ${gender} with a history of ${diagnosisText}. `;
+            }
+            
+            if (carePlan) paragraph += `${pronoun1cap} ${carePlan}`;
+            if (homeMeds) paragraph += `${pronoun1cap} ${homeMeds}`;
+            if (schoolMeds) paragraph += `${pronoun1cap} ${schoolMeds}`;
+            if (rescueMeds) paragraph += `${pronoun1cap} ${rescueMeds}`;
+            
+            paragraph += `${pronoun1cap} is seen regularly by ${providersText}. `;
+            
+            if (edHospText) paragraph += `${pronoun1cap} ${edHospText}`;
+            
+            paragraph += `${pronoun1cap}${ax} ${pronoun1cap}${drestrict} `;
+            
+            if (screeningText) paragraph += `${pronoun1cap} ${screeningText}`;
+            
+            paragraph += `${pronoun1cap} is ${immun} to required immunizations. ` +
+                `Health information obtained via records review and in-meeting interview. ` +
+                `Parents are requested to update health information and relay any health-related concerns to school and nurse.\n\n` +
+                `${rn || 'Name not entered.'} (${currentDate})`;
+            
+            // Display the paragraph in the textarea
+            document.getElementById('resultTextarea').value = paragraph;
+        });
+
+        // Allow Enter key to add diagnosis
+        document.getElementById('diagnosis-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('add-diagnosis').click();
+            }
+        });
+    </script>
+</body>
+</html>

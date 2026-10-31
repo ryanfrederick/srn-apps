@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[SCHOOL ID]: Classroom Illness Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .risk-filter-section {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .risk-filter-section h2 {
+            margin-top: 0;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .period-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .period-input label {
+            font-size: 12px;
+            font-weight: normal;
+            margin-bottom: 3px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button.secondary {
+            background-color: #2196F3;
+        }
+
+        button.secondary:hover {
+            background-color: #0b7dda;
+        }
+
+        button.danger {
+            background-color: #f44336;
+        }
+
+        button.danger:hover {
+            background-color: #da190b;
+        }
+
+        .illness-filters {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .illness-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input {
+            margin-right: 8px;
+        }
+
+        .results-section {
+            margin-top: 20px;
+        }
+
+        .outbreak-group {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .outbreak-group.risk-green {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        .outbreak-group.risk-yellow {
+            background-color: #fff9c4;
+            border-left: 4px solid #ffc107;
+        }
+
+        .outbreak-group.risk-red {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        .outbreak-group h3 {
+            margin-bottom: 10px;
+        }
+
+        .outbreak-group.risk-green h3 {
+            color: #2e7d32;
+        }
+
+        .outbreak-group.risk-yellow h3 {
+            color: #f57f17;
+        }
+
+        .outbreak-group.risk-red h3 {
+            color: #c62828;
+        }
+
+        .student-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .student-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .student-list li:last-child {
+            border-bottom: none;
+        }
+
+        .no-results {
+            color: #888;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .edit-cases-section {
+            background-color: #f3e5f5;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ce93d8;
+            overflow: hidden;
+        }
+
+        .edit-cases-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .edit-cases-header:hover {
+            background-color: #e1bee7;
+        }
+
+        .edit-cases-header h2 {
+            margin: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+            color: #6a1b9a;
+        }
+
+        .edit-cases-body {
+            padding: 20px;
+            display: none;
+            border-top: 1px solid #ce93d8;
+        }
+
+        .edit-cases-body.expanded {
+            display: block;
+        }
+
+        .toggle-icon {
+            font-size: 18px;
+            color: #6a1b9a;
+            transition: transform 0.2s;
+        }
+
+        .case-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: white;
+        }
+
+        .case-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .case-item:last-child {
+            border-bottom: none;
+        }
+
+        .case-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .case-item.selected {
+            background-color: #ce93d8;
+        }
+
+        .case-item .case-name {
+            font-weight: bold;
+        }
+
+        .case-item .case-details {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .case-item.selected .case-details {
+            color: #444;
+        }
+
+        .no-cases {
+            padding: 15px;
+            color: #888;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            background-color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏫 Classroom Illness Tracker - [SCHOOL ID]</h1>
+
+        <div class="form-section">
+            <h2>Add Student</h2>
+            <div class="form-group">
+                <label for="studentName">Student Name:</label>
+                <input type="text" id="studentName" placeholder="Enter student name">
+            </div>
+            <div class="form-group">
+                <label for="diagnosis">Probable Diagnosis:</label>
+                <select id="diagnosis">
+                    <option value="">-- Select Diagnosis --</option>
+                    <option value="COVID-19">COVID-19</option>
+                    <option value="Influenza">Influenza</option>
+                    <option value="Measles">Measles</option>
+                    <option value="Norovirus">Norovirus</option>
+                    <option value="Pertussis">Pertussis</option>
+                    <option value="Mono">Mono</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="illnessDate">Date of Illness:</label>
+                <input type="date" id="illnessDate">
+            </div>
+            <div class="form-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="confirmedCase">
+                    <label for="confirmedCase">Confirmed</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Class Schedule (Teacher: lastname, firstname):</label>
+                <div class="schedule-grid" id="scheduleGrid"></div>
+            </div>
+            <button onclick="addStudent()">Add Student</button>
+            <div class="success-message" id="successMessage">Student added successfully!</div>
+        </div>
+
+        <div class="edit-cases-section">
+            <div class="edit-cases-header" onclick="toggleEditPanel()">
+                <h2>Edit / Delete Cases</h2>
+                <span class="toggle-icon" id="editToggleIcon">&#9660;</span>
+            </div>
+            <div class="edit-cases-body" id="editCasesBody">
+                <div class="form-group">
+                    <label for="caseSearch">Search Cases:</label>
+                    <input type="text" id="caseSearch" placeholder="Search by name, diagnosis, date, or teacher..." oninput="searchCases()">
+                </div>
+                <div class="case-list" id="caseList">
+                    <p class="no-cases">No cases loaded.</p>
+                </div>
+                <div class="edit-actions">
+                    <button class="danger" id="deleteCaseBtn" onclick="deleteSelectedCase()" disabled>&#128465; Delete Case</button>
+                    <button class="secondary" id="modifyCaseBtn" onclick="modifySelectedCase()" disabled>&#9998; Modify Case</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="risk-filter-section">
+            <h2>Filter by Risk Level</h2>
+            <div class="illness-checkboxes">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="filterGreen" onchange="analyzeOutbreaks()">
+                    <label for="filterGreen">Show Green (Low Risk)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="filterYellow" checked onchange="analyzeOutbreaks()">
+                    <label for="filterYellow">Show Yellow (Moderate Risk - 2 confirmed or 3-4 total)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="filterRed" checked disabled>
+                    <label for="filterRed">Show Red (High Risk - 3+ confirmed or 5+ total) - Always displayed</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="illness-filters">
+            <h2>Filter by Illness Type</h2>
+            <div class="illness-checkboxes" id="illnessCheckboxes"></div>
+        </div>
+
+        <div class="results-section">
+            <h2>Potential Outbreak Analysis</h2>
+            <div id="results">
+                <p class="no-results">Add students and select illness types to identify potential outbreaks.</p>
+            </div>
+        </div>
+
+        <div class="file-controls">
+            <button onclick="saveData()">💾 Save Data (JSON)</button>
+            <button class="secondary" onclick="document.getElementById('fileInput').click()">📂 Load Data (JSON)</button>
+            <button class="danger" onclick="purgeOldRecords()">🗑️ Purge Old Records</button>
+            <input type="file" id="fileInput" accept=".json" onchange="loadData(event)">
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+
+        const teachers = [
+            'Lastname, Firstname',
+            'Example, Teacher',
+        ];
+
+        const illnessTypes = [
+            'COVID-19',
+            'Influenza',
+            'Measles',
+            'Norovirus',
+            'Pertussis',
+            'Mono'
+        ];
+
+        const illnessColors = {
+            'COVID-19': '#d32f2f',
+            'Influenza': '#1565c0',
+            'Measles': '#6a1b9a',
+            'Norovirus': '#e65100',
+            'Pertussis': '#2e7d32',
+            'Mono': '#8e24aa'
+        };
+
+        function initializeForm() {
+            const datalist = document.createElement('datalist');
+            datalist.id = 'teacherList';
+            teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher;
+                datalist.appendChild(option);
+            });
+            document.body.appendChild(datalist);
+
+            const scheduleGrid = document.getElementById('scheduleGrid');
+            for (let i = 1; i <= 8; i++) {
+                const periodDiv = document.createElement('div');
+                periodDiv.className = 'period-input';
+                periodDiv.innerHTML = `
+                    <label>Period ${i}:</label>
+                    <input type="text" id="period${i}" list="teacherList" placeholder="Start typing teacher name...">
+                `;
+                scheduleGrid.appendChild(periodDiv);
+            }
+
+            const checkboxContainer = document.getElementById('illnessCheckboxes');
+            illnessTypes.forEach(illness => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'checkbox-item';
+                const color = illnessColors[illness] || '#333';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="illness_${illness.replace(/[^a-zA-Z0-9]/g, '_')}" 
+                           value="${illness}" onchange="analyzeOutbreaks()">
+                    <label for="illness_${illness.replace(/[^a-zA-Z0-9]/g, '_')}" style="color:${color};font-weight:bold">${illness}</label>
+                `;
+                checkboxContainer.appendChild(checkboxDiv);
+            });
+        }
+
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function addStudent() {
+            const name = document.getElementById('studentName').value.trim();
+            const diagnosis = document.getElementById('diagnosis').value.trim();
+            const illnessDate = document.getElementById('illnessDate').value;
+
+            if (!name || !diagnosis) {
+                alert('Please enter both student name and diagnosis.');
+                return;
+            }
+
+            const schedule = [];
+            for (let i = 1; i <= 8; i++) {
+                const teacher = document.getElementById(`period${i}`).value.trim();
+                schedule.push(teacher);
+            }
+
+            const confirmed = document.getElementById('confirmedCase').checked;
+
+            const student = {
+                id: Date.now(),
+                name: name,
+                diagnosis: diagnosis,
+                confirmed: confirmed,
+                illnessDate: illnessDate,
+                schedule: schedule
+            };
+
+            students.push(student);
+
+            const successMsg = document.getElementById('successMessage');
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 2000);
+
+            document.getElementById('studentName').value = '';
+            document.getElementById('diagnosis').value = '';
+            document.getElementById('confirmedCase').checked = false;
+            document.getElementById('illnessDate').value = getTodayDate();
+            for (let i = 1; i <= 8; i++) {
+                document.getElementById(`period${i}`).value = '';
+            }
+
+            analyzeOutbreaks();
+        }
+
+        function analyzeOutbreaks() {
+            const resultsDiv = document.getElementById('results');
+            const selectedIllnesses = [];
+            illnessTypes.forEach(illness => {
+                const checkbox = document.getElementById(`illness_${illness.replace(/[^a-zA-Z0-9]/g, '_')}`);
+                if (checkbox && checkbox.checked) {
+                    selectedIllnesses.push(illness.toLowerCase());
+                }
+            });
+
+            if (selectedIllnesses.length === 0 || students.length === 0) {
+                resultsDiv.innerHTML = '<p class="no-results">Add students and select illness types to identify potential outbreaks.</p>';
+                return;
+            }
+
+            const filteredStudents = students.filter(student => {
+                return selectedIllnesses.some(illness =>
+                    student.diagnosis.toLowerCase().includes(illness) ||
+                    illness.includes(student.diagnosis.toLowerCase())
+                );
+            });
+
+            if (filteredStudents.length === 0) {
+                resultsDiv.innerHTML = '<p class="no-results">No students found with selected illnesses.</p>';
+                return;
+            }
+
+            const outbreaks = {};
+
+            filteredStudents.forEach(student => {
+                student.schedule.forEach((teacher, periodIndex) => {
+                    if (teacher) {
+                        const key = `${teacher}|Period ${periodIndex + 1}|${student.diagnosis}`;
+                        if (!outbreaks[key]) {
+                            outbreaks[key] = {
+                                teacher: teacher,
+                                period: periodIndex + 1,
+                                diagnosis: student.diagnosis,
+                                students: []
+                            };
+                        }
+                        outbreaks[key].students.push(student);
+                    }
+                });
+            });
+
+            const allOutbreaks = Object.values(outbreaks);
+
+            if (allOutbreaks.length === 0) {
+                resultsDiv.innerHTML = '<p class="no-results">No students found in any classes.</p>';
+                return;
+            }
+
+            allOutbreaks.sort((a, b) => b.students.length - a.students.length);
+
+            const showGreen = document.getElementById('filterGreen').checked;
+            const showYellow = document.getElementById('filterYellow').checked;
+            const showRed = true;
+
+            let html = '';
+            allOutbreaks.forEach(group => {
+                const totalCount = group.students.length;
+                const confirmedCount = group.students.filter(s => s.confirmed).length;
+                let riskClass, riskIcon, riskLabel, shouldDisplay;
+
+                if (confirmedCount >= 3 || totalCount >= 5) {
+                    riskClass = 'risk-red';
+                    riskIcon = '🚨';
+                    riskLabel = 'High Risk';
+                    shouldDisplay = showRed;
+                } else if (confirmedCount >= 2 || (totalCount >= 3 && totalCount <= 4)) {
+                    riskClass = 'risk-yellow';
+                    riskIcon = '⚠';
+                    riskLabel = 'Moderate Risk';
+                    shouldDisplay = showYellow;
+                } else {
+                    riskClass = 'risk-green';
+                    riskIcon = '✓';
+                    riskLabel = 'Low Risk';
+                    shouldDisplay = showGreen;
+                }
+
+                if (!shouldDisplay) return;
+
+                const diagnosisColor = illnessColors[group.diagnosis] || '#333';
+                html += `
+                    <div class="outbreak-group ${riskClass}">
+                        <h3>${riskIcon} ${group.teacher} - Period ${group.period} - <span style="color:${diagnosisColor}">${group.diagnosis}</span> (${riskLabel})</h3>
+                        <p><strong>${totalCount} student${totalCount > 1 ? 's' : ''} affected (${confirmedCount} confirmed)</strong></p>
+                        <ul class="student-list">
+                            ${group.students.map(s => {
+                                const dateStr = s.illnessDate ? ` (${s.illnessDate})` : '';
+                                const nameWeight = s.confirmed ? 'font-weight:bold' : 'font-weight:normal';
+                                const nameColor = illnessColors[s.diagnosis] || '#333';
+                                const confirmedTag = s.confirmed ? ' ✔' : '';
+                                return `<li><span style="${nameWeight};color:${nameColor}">${s.name}</span> - ${s.diagnosis}${confirmedTag}${dateStr}</li>`;
+                            }).join('')}
+                        </ul>
+                    </div>
+                `;
+            });
+
+            if (html === '') {
+                resultsDiv.innerHTML = '<p class="no-results">No outbreaks match the selected risk level filters.</p>';
+            } else {
+                resultsDiv.innerHTML = html;
+            }
+        }
+
+        function saveData() {
+            const data = {
+                students: students,
+                exportDate: new Date().toISOString()
+            };
+
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `illness-tracker-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function loadData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.students && Array.isArray(data.students)) {
+                        students = data.students.map(s => ({
+                            ...s,
+                            confirmed: s.confirmed !== undefined ? s.confirmed : false
+                        }));
+                        analyzeOutbreaks();
+                        alert(`Successfully loaded ${students.length} student(s) from file.`);
+                    } else {
+                        alert('Invalid file format. Please select a valid JSON file.');
+                    }
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function purgeOldRecords() {
+            if (students.length === 0) {
+                alert('No records to purge.');
+                return;
+            }
+
+            const diagnosis = prompt(`Select diagnosis to purge:\n1 - COVID-19\n2 - Influenza\n3 - Measles\n4 - Norovirus\n5 - Pertussis\n6 - Mono\n7 - All diagnoses\n\nEnter number (1-7):`);
+
+            if (!diagnosis) return;
+
+            const diagnosisMap = {
+                '1': 'COVID-19',
+                '2': 'Influenza',
+                '3': 'Measles',
+                '4': 'Norovirus',
+                '5': 'Pertussis',
+                '6': 'Mono',
+                '7': 'ALL'
+            };
+
+            const selectedDiagnosis = diagnosisMap[diagnosis];
+            if (!selectedDiagnosis) {
+                alert('Invalid selection. Please enter a number between 1 and 7.');
+                return;
+            }
+
+            const daysStr = prompt('Enter number of days (records older than this will be deleted):');
+            if (!daysStr) return;
+
+            const days = parseInt(daysStr);
+            if (isNaN(days) || days < 0) {
+                alert('Invalid number of days. Please enter a positive number.');
+                return;
+            }
+
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+
+            const initialCount = students.length;
+            students = students.filter(student => {
+                const diagnosisMatch = selectedDiagnosis === 'ALL' || student.diagnosis === selectedDiagnosis;
+                if (!diagnosisMatch) return true;
+
+                if (!student.illnessDate) return true;
+                return student.illnessDate > cutoffDateStr;
+            });
+
+            const deletedCount = initialCount - students.length;
+
+            if (deletedCount > 0) {
+                alert(`Purged ${deletedCount} record(s) for ${selectedDiagnosis} older than ${days} day(s).`);
+                analyzeOutbreaks();
+            } else {
+                alert('No records matched the purge criteria.');
+            }
+        }
+
+        let selectedCaseId = null;
+
+        function toggleEditPanel() {
+            const body = document.getElementById('editCasesBody');
+            const icon = document.getElementById('editToggleIcon');
+            const isExpanded = body.classList.contains('expanded');
+            if (isExpanded) {
+                body.classList.remove('expanded');
+                icon.innerHTML = '&#9660;';
+            } else {
+                body.classList.add('expanded');
+                icon.innerHTML = '&#9650;';
+                searchCases();
+            }
+        }
+
+        function searchCases() {
+            const query = document.getElementById('caseSearch').value.toLowerCase();
+            const caseList = document.getElementById('caseList');
+
+            if (students.length === 0) {
+                caseList.innerHTML = '<p class="no-cases">No cases loaded.</p>';
+                return;
+            }
+
+            const filtered = students.filter(s =>
+                s.name.toLowerCase().includes(query) ||
+                s.diagnosis.toLowerCase().includes(query) ||
+                (s.illnessDate && s.illnessDate.includes(query)) ||
+                s.schedule.some(t => t && t.toLowerCase().includes(query))
+            );
+
+            if (filtered.length === 0) {
+                caseList.innerHTML = '<p class="no-cases">No cases match your search.</p>';
+                return;
+            }
+
+            caseList.innerHTML = filtered.map(s => {
+                const dateStr = s.illnessDate || 'No date';
+                const confirmedStr = s.confirmed ? ' \u2714 Confirmed' : '';
+                const teacherList = s.schedule.filter(t => t).join(', ');
+                const isSelected = s.id === selectedCaseId;
+                return `<div class="case-item${isSelected ? ' selected' : ''}" onclick="selectCase(${s.id})">
+                    <div class="case-name">${s.name}${confirmedStr}</div>
+                    <div class="case-details">${s.diagnosis} | ${dateStr}${teacherList ? ' | ' + teacherList : ''}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function selectCase(id) {
+            selectedCaseId = id;
+            document.getElementById('deleteCaseBtn').disabled = false;
+            document.getElementById('modifyCaseBtn').disabled = false;
+            searchCases();
+        }
+
+        function deleteSelectedCase() {
+            if (selectedCaseId === null) return;
+            const student = students.find(s => s.id === selectedCaseId);
+            if (!student) return;
+            if (!confirm(`Delete case for "${student.name}" (${student.diagnosis})?`)) return;
+            students = students.filter(s => s.id !== selectedCaseId);
+            selectedCaseId = null;
+            document.getElementById('deleteCaseBtn').disabled = true;
+            document.getElementById('modifyCaseBtn').disabled = true;
+            searchCases();
+            analyzeOutbreaks();
+        }
+
+        function modifySelectedCase() {
+            if (selectedCaseId === null) return;
+            const student = students.find(s => s.id === selectedCaseId);
+            if (!student) return;
+
+            document.getElementById('studentName').value = student.name;
+            document.getElementById('diagnosis').value = student.diagnosis;
+            document.getElementById('illnessDate').value = student.illnessDate || getTodayDate();
+            document.getElementById('confirmedCase').checked = student.confirmed || false;
+            for (let i = 1; i <= 8; i++) {
+                document.getElementById(`period${i}`).value = student.schedule[i - 1] || '';
+            }
+
+            students = students.filter(s => s.id !== selectedCaseId);
+            selectedCaseId = null;
+            document.getElementById('deleteCaseBtn').disabled = true;
+            document.getElementById('modifyCaseBtn').disabled = true;
+            searchCases();
+            analyzeOutbreaks();
+
+            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        initializeForm();
+        document.getElementById('illnessDate').value = getTodayDate();
+    </script>
+</body>
+</html>

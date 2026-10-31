@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .checkbox-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .checkbox-item {
+            padding: 5px 0;
+        }
+        select {
+            padding: 8px;
+            font-size: 14px;
+            width: 200px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSV Converter</h1>
+        
+        <div class="section">
+            <label for="fileInput">Choose CSV File:</label>
+            <input type="file" id="fileInput" accept=".csv" />
+        </div>
+
+        <div class="section" id="checkboxSection" style="display: none;">
+            <label>Select Students:</label>
+            <div class="checkbox-list" id="checkboxList"></div>
+        </div>
+
+        <div class="section" id="formatSection" style="display: none;">
+            <label for="formatSelect">Output Format:</label>
+            <select id="formatSelect">
+                <option value="ARC-CPR">ARC-CPR</option>
+                <option value="STB">STB</option>
+            </select>
+        </div>
+
+        <div class="section" id="downloadSection" style="display: none;">
+            <button id="downloadBtn">Download CSV</button>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let headers = [];
+
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length < 2) {
+                alert('CSV file must have at least a header row and one data row');
+                return;
+            }
+
+            // Parse header
+            headers = parseCSVLine(lines[0]);
+            
+            // Parse data rows
+            csvData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length === headers.length) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        let value = values[index].trim();
+                        // Remove whitespace from email field
+                        if (header === 'Email') {
+                            value = value.replace(/\s+/g, '');
+                        }
+                        row[header] = value;
+                    });
+                    csvData.push(row);
+                }
+            }
+
+            displayCheckboxList();
+            document.getElementById('checkboxSection').style.display = 'block';
+            document.getElementById('formatSection').style.display = 'block';
+            document.getElementById('downloadSection').style.display = 'block';
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            
+            return result;
+        }
+
+        function displayCheckboxList() {
+            const checkboxList = document.getElementById('checkboxList');
+            checkboxList.innerHTML = '';
+
+            csvData.forEach((row, index) => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `student-${index}`;
+                checkbox.checked = true;
+                checkbox.value = index;
+
+                const label = document.createElement('label');
+                label.htmlFor = `student-${index}`;
+                label.style.display = 'inline';
+                label.style.marginLeft = '5px';
+                label.style.fontWeight = 'normal';
+                label.textContent = `${row['Last Name']}, ${row['First Name']}`;
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                checkboxList.appendChild(div);
+            });
+        }
+
+        function downloadCSV() {
+            const selectedIndices = [];
+            csvData.forEach((row, index) => {
+                const checkbox = document.getElementById(`student-${index}`);
+                if (checkbox && checkbox.checked) {
+                    selectedIndices.push(index);
+                }
+            });
+
+            if (selectedIndices.length === 0) {
+                alert('Please select at least one student');
+                return;
+            }
+
+            const format = document.getElementById('formatSelect').value;
+            const today = new Date();
+            const dateStr = today.getFullYear() + 
+                           String(today.getMonth() + 1).padStart(2, '0') + 
+                           String(today.getDate()).padStart(2, '0');
+            
+            let csvContent = '';
+            let filename = '';
+
+            if (format === 'ARC-CPR') {
+                filename = `CPR-${dateStr}.csv`;
+                csvContent = 'First Name,Last Name,Email,Phone Number,"Evaluation (see instructions, data entered must match evaluation options)","Reason if unsuccessful or not evaluated (see instructions, data entered must match an item from the list)",Additional Information (optional)\n';
+                
+                selectedIndices.forEach(index => {
+                    const row = csvData[index];
+                    csvContent += `${escapeCSV(row['First Name'])},${escapeCSV(row['Last Name'])},${escapeCSV(row['Email'])},,Successful,,\n`;
+                });
+            } else { // STB
+                filename = `STB-${dateStr}.csv`;
+                csvContent = 'lname,fname,email,school\n';
+                
+                selectedIndices.forEach(index => {
+                    const row = csvData[index];
+                    csvContent += `${escapeCSV(row['Last Name'])},${escapeCSV(row['First Name'])},${escapeCSV(row['Email'])},${escapeCSV(row['Site'])}\n`;
+                });
+            }
+
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function escapeCSV(value) {
+            if (value == null) return '';
+            value = String(value);
+            if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                return '"' + value.replace(/"/g, '""') + '"';
+            }
+            return value;
+        }
+    </script>
+</body>
+</html>
