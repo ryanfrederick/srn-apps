@@ -12,7 +12,9 @@
       flex-direction: column; align-items: center; min-height: 100vh;
     }
     h2 { margin: 0 0 16px; font-size: 16px; color: #444; font-weight: normal; }
-
+    .form-group {
+        margin-bottom: 15px;
+    }
     #loader {
       background: #fff; border-radius: 10px; padding: 28px 32px;
       box-shadow: 0 2px 10px rgba(0,0,0,.12); text-align: center; margin-top: 60px;
@@ -62,11 +64,41 @@
     .btn-restart { background: #0055bb; color: #fff; border: none; border-radius: 6px;
       padding: 9px 20px; cursor: pointer; font-size: 14px; }
     .btn-restart:hover { background: #003a8a; }
+    #rn-setup {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    }
+    #rn-setup p {
+        margin-top: 0;
+        color: #856404;
+    }
+    #rn-setup .form-group {
+        margin-bottom: 10px;
+    }
+    #rn-setup button {
+        background-color: #ffc107;
+        color: #856404;
+        font-weight: bold;
+    }
+    #rn-setup button:hover {
+        background-color: #e0a800;
+    }
   </style>
 </head>
 <body>
 
 <div id="loader">
+  <div id="rn-setup" style="display:none;">
+    <p><strong>Setup Required:</strong> Your name is not yet configured for this form. Please enter them below so they can be included in the generated health summary signature.</p>
+    <div class="form-group">
+        <label for="rn-input">Your Name (e.g. Jane Smith, RN):</label>
+        <input type="text" id="rn-input" placeholder="Jane Smith, RN">
+    </div>
+    <button type="button" id="rn-setup-btn">Save &amp; Continue</button>
+  </div>
   <h1>STB Certificate Emailer</h1>
   <label for="csvFile">Select a CSV file to begin</label><br><br>
   <input type="file" id="csvFile" accept=".csv">
@@ -103,14 +135,36 @@
 
 <script>
 // ── Email template ─────────────────────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const rn = urlParams.get('rn');
 const SUBJECT = "Stop the Bleed Certificate";
 
-function buildBody(firstName) {
-  return firstName + ",\r\n\r\n"
-    + "Thank you for attending our Academy District 20 Stop the Bleed course. "
-    + "I have attached your certificate and included your school nurse as appropriate."
-    + "\r\n\r\nBest regards,\r\n\r\nSchool Nurse, RN";
+// Show setup form if rn is not set
+if (!rn) {
+document.getElementById('rn-setup').style.display = 'block';
 }
+
+// Handle setup button: reload page with rn and rnemail as URL params
+document.getElementById('rn-setup-btn').addEventListener('click', function() {
+    const rnValue = document.getElementById('rn-input').value.trim();
+    if (!rnValue) {
+        alert('Please enter your name.');
+        return;
+    }
+    const params = new URLSearchParams();
+    params.set('rn', rnValue);
+        window.location.search = params.toString();
+});
+
+function buildBody(firstName, rn) {
+  return `${firstName},\r\n\r\n
+  Thank you for attending our Academy District 20 Stop the Bleed course. I have attached your certificate and included your school nurse as appropriate.
+
+  Best regards,
+
+  ${rn}`;
+}
+
 
 // ── Admin/non-school site detection ───────────────────────────────────────────
 function isAdminSite(schoolName) {
@@ -194,12 +248,12 @@ function parseCSV(text) {
 // ── State ─────────────────────────────────────────────────────────────────────
 let rows = [], index = 0, sentCount = 0;
 
-function buildMailto(row, nurses) {
+function buildMailto(row, nurses, rn) {
   const ccEmails = nurses.map(n => n.email);
   let href = "mailto:" + encodeURIComponent(row.email);
   href += "?subject=" + encodeURIComponent(SUBJECT);
   if (ccEmails.length > 0) href += "&cc=" + encodeURIComponent(ccEmails.join(","));
-  href += "&body=" + encodeURIComponent(buildBody(row.fname));
+  href += "&body=" + encodeURIComponent(buildBody(row.fname, rn));
   return href;
 }
 
@@ -236,7 +290,7 @@ function showCard(i) {
     }
   }
 
-  btn.href = buildMailto(row, nurses);
+  btn.href = buildMailto(row, nurses, rn);
   document.getElementById("btn-back").disabled = (i === 0);
 }
 
