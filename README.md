@@ -52,6 +52,10 @@ If you would like to add in your teacher information find the example code block
 Open the applaction and add the pertitenent data. Once students are added you can save the json file to load for future use. Consider saving copies of the file with dates so that you can easily roll back if a mistake was made. By default it shows class rooms where there are 2 or more contacts of the same illnesses. You may select "Low Risk" or Green filter to show teachers that have reportable illness greater than 0 in their class room for each class period. You search and Replace [SCHOOL ID] with your school letters, but this is purely aesthetic.
 
 
- 
+## Paraprofessional Support Plan Builder
 
- 
+To be completed later.
+
+### Usage
+
+To be completed later. 
